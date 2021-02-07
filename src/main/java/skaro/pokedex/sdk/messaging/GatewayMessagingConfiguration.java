@@ -1,4 +1,4 @@
-package skaro.pokedex.sdk;
+package skaro.pokedex.sdk.messaging;
 
 import org.springframework.amqp.core.Queue;
 import org.springframework.context.annotation.Bean;
