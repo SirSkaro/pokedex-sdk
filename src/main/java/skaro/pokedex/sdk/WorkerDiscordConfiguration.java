@@ -4,7 +4,6 @@ import java.util.Collections;
 
 import javax.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,7 +42,6 @@ public class WorkerDiscordConfiguration {
 	}
 	
 	@Bean
-	@Autowired
 	public Router getDiscordRestRouter(RouterOptions routerOptions) {
 		return new DefaultRouter(routerOptions);
 	}
