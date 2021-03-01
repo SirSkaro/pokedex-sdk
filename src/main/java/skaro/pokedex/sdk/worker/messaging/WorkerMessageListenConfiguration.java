@@ -7,8 +7,6 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.validation.Valid;
-
 import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.core.AnonymousQueue;
 import org.springframework.amqp.core.Binding;
@@ -19,7 +17,6 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.DirectMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.MessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -27,27 +24,21 @@ import org.springframework.context.support.GenericApplicationContext;
 
 import skaro.pokedex.sdk.messaging.DispatchTopicMessagingConfiguration;
 import skaro.pokedex.sdk.messaging.MessageReceiver;
-import skaro.pokedex.sdk.worker.CommandRegistration;
-import skaro.pokedex.sdk.worker.WorkerCommandConfigurationProperties;
+import skaro.pokedex.sdk.worker.command.CommandRegistrar;
+import skaro.pokedex.sdk.worker.command.CommandRegistration;
+import skaro.pokedex.sdk.worker.command.WorkerCommandConfigurationProperties;
 
 @Configuration
 @Import(DispatchTopicMessagingConfiguration.class)
-public class WorkerMessageConfiguration {
+public class WorkerMessageListenConfiguration {
 
-	@Bean
-	@Valid
-	@ConfigurationProperties(WorkerCommandConfigurationProperties.WORKER_PROPERTIES_PREFIX)
-	public WorkerCommandConfigurationProperties workerConfigurationProperties() {
-		return new WorkerCommandConfigurationProperties();
-	}
-	
 	@Bean
 	public MessageReceiver<WorkRequest> messageReceiver() {
 		return new WorkRequestReceiver();
 	}
 	
 	@Bean
-	public MessageListenerAdapter listenerAdapter(WorkRequestReceiver receiver) {
+	public MessageListenerAdapter listenerAdapter(MessageReceiver<WorkRequest> receiver) {
 		return new MessageListenerAdapter(receiver, MessageReceiver.RECIEVE_METHOD_NAME);
 	}
 	
@@ -60,9 +51,9 @@ public class WorkerMessageConfiguration {
 	public List<Binding> bindings(GenericApplicationContext context, 
 			Queue queue, 
 			TopicExchange topic,
-			WorkerCommandConfigurationProperties configProperties) {
+			CommandRegistrar commandRegistrar) {
 		
-		return configProperties.getCommands().stream()
+		return commandRegistrar.getCommandRegistrations().stream()
 				.flatMap(commandRegistration -> createBindings(commandRegistration, queue, topic))
 				.map(binding -> registerBinding(context, binding))
 				.collect(Collectors.toList());

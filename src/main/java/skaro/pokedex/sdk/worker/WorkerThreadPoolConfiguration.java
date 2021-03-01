@@ -10,7 +10,7 @@ import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
 @Configuration
-public class WorkerSchedulerConfiguration {
+public class WorkerThreadPoolConfiguration {
 
 	@Bean
 	public Executor executor() {

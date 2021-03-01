@@ -1,4 +1,4 @@
-package skaro.pokedex.sdk.worker;
+package skaro.pokedex.sdk.worker.command;
 
 import java.util.List;
 

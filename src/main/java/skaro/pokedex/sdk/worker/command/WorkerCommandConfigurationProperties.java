@@ -1,4 +1,4 @@
-package skaro.pokedex.sdk.worker;
+package skaro.pokedex.sdk.worker.command;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ public class WorkerCommandConfigurationProperties {
 	@NotEmpty
 	private List<CommandRegistration> commands;
 
-	public List<CommandRegistration> getCommands() {
+	public List<CommandRegistration> getCommandRegistrations() {
 		return commands;
 	}
 
