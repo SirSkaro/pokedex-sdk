@@ -55,9 +55,18 @@ public class BeanCommandRegistrar implements CommandRegistrar {
 	}
 	
 	private void mapNameAndAliases(Map<String, Command> commands, CommandRegistration registration, Command command) {
-		commands.put(registration.getName(), command);
-		registration.getAliases().forEach(alias -> commands.put(alias, command));
+		map(commands, registration.getName(), command);
+		registration.getAliases().forEach(alias -> map(commands, alias, command));
 		LOG.info("Matched command registration '{}' with bean {}", registration.getName(), command.getClass().getName());
+	}
+	
+	private void map(Map<String, Command> commands, String key, Command value) {
+		if(commands.containsKey(key)) {
+			String errorMessage = String.format("Name or alias '%s' is already registered to %s", key, commands.get(key).getClass().getName());
+			throw new WorkerCommandConfigurationException(errorMessage);
+		}
+		
+		commands.put(key, value);
 	}
 
 }
