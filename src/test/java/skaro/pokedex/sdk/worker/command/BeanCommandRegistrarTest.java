@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -25,11 +24,6 @@ public class BeanCommandRegistrarTest {
 	private BeanFactory beanFactory;
 	
 	private BeanCommandRegistrar registrar;
-	
-	@BeforeEach
-	public void setup() {
-		
-	}
 	
 	@Test
 	public void testCreateRegistrarSuccessfulRegistration() {

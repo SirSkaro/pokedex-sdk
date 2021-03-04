@@ -39,7 +39,7 @@ public class BeanCommandRegistrar implements CommandRegistrar {
 
 	@Override
 	public Optional<Command> getCommandByNameOrAlias(String nameOrAlias) {
-		return Optional.of(commands.get(nameOrAlias));
+		return Optional.ofNullable(commands.get(nameOrAlias));
 	}
 	
 	private Command findByCommandName(BeanFactory beanFactory, String name) {
