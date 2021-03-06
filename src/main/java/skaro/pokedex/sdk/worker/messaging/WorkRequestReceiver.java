@@ -12,7 +12,7 @@ public class WorkRequestReceiver implements MessageReceiver<WorkRequest> {
 	private FluxSink<WorkRequest> fluxSink;
 	
 	public WorkRequestReceiver() {
-		publish = Flux.create(sink -> {this.fluxSink = sink;}, OverflowStrategy.BUFFER);
+		publish = Flux.create(this::setSink, OverflowStrategy.BUFFER);
 	}
 
 	@Override
@@ -23,6 +23,10 @@ public class WorkRequestReceiver implements MessageReceiver<WorkRequest> {
 	@Override
 	public Flux<WorkRequest> streamMessages(Scheduler scheduler) {
 		return publish.publishOn(scheduler);
+	}
+	
+	private void setSink(FluxSink<WorkRequest> fluxSink) {
+		this.fluxSink = fluxSink;
 	}
 
 }
