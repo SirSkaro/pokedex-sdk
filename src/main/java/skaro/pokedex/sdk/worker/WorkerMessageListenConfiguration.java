@@ -1,6 +1,6 @@
-package skaro.pokedex.sdk.worker.messaging;
+package skaro.pokedex.sdk.worker;
 
-import static skaro.pokedex.sdk.messaging.DispatchTopicMessagingConfiguration.SIMPLE_COMMAND_ROUTING_PATTERN_PREFIX;
+import static skaro.pokedex.sdk.messaging.dispatch.DispatchTopicMessagingConfiguration.SIMPLE_COMMAND_ROUTING_PATTERN_PREFIX;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -22,11 +22,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.GenericApplicationContext;
 
-import skaro.pokedex.sdk.messaging.DispatchTopicMessagingConfiguration;
 import skaro.pokedex.sdk.messaging.MessageReceiver;
-import skaro.pokedex.sdk.worker.command.CommandRegistrar;
-import skaro.pokedex.sdk.worker.command.CommandRegistration;
+import skaro.pokedex.sdk.messaging.dispatch.DispatchTopicMessagingConfiguration;
+import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
+import skaro.pokedex.sdk.messaging.dispatch.WorkRequestReceiver;
 import skaro.pokedex.sdk.worker.command.WorkerCommandConfigurationProperties;
+import skaro.pokedex.sdk.worker.command.registration.CommandRegistrar;
+import skaro.pokedex.sdk.worker.command.registration.CommandRegistration;
 
 @Configuration
 @Import(DispatchTopicMessagingConfiguration.class)

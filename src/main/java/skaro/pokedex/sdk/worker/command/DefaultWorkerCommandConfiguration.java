@@ -9,7 +9,13 @@ import org.springframework.context.annotation.Configuration;
 
 import reactor.core.scheduler.Scheduler;
 import skaro.pokedex.sdk.messaging.MessageReceiver;
-import skaro.pokedex.sdk.worker.messaging.WorkRequest;
+import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
+import skaro.pokedex.sdk.worker.command.manager.CommandManager;
+import skaro.pokedex.sdk.worker.command.manager.ReportingCommandManager;
+import skaro.pokedex.sdk.worker.command.registration.BeanCommandRegistrar;
+import skaro.pokedex.sdk.worker.command.registration.CommandRegistrar;
+import skaro.pokedex.sdk.worker.command.source.CommandSource;
+import skaro.pokedex.sdk.worker.command.source.CommandSourceRunner;
 
 @Configuration
 public class DefaultWorkerCommandConfiguration {

@@ -15,6 +15,9 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import skaro.pokedex.sdk.worker.command.registration.BeanCommandRegistrar;
+import skaro.pokedex.sdk.worker.command.registration.CommandRegistration;
+
 @ExtendWith(SpringExtension.class)
 public class BeanCommandRegistrarTest {
 

@@ -16,7 +16,6 @@ import discord4j.rest.request.DefaultRouter;
 import discord4j.rest.request.RequestQueueFactory;
 import discord4j.rest.request.Router;
 import discord4j.rest.request.RouterOptions;
-import io.netty.resolver.DefaultAddressResolverGroup;
 import reactor.core.scheduler.Scheduler;
 import reactor.netty.http.client.HttpClient;
 import skaro.pokedex.sdk.DiscordConfigurationProperties;
@@ -32,22 +31,16 @@ public class WorkerDiscordConfiguration {
 	}
 	
 	@Bean
-	public RouterOptions getRouterOptions(DiscordConfigurationProperties discordProperties, Scheduler scheduler) {
-		ExchangeStrategies exchangeStrategies = ExchangeStrategies.jackson(JacksonResources.create().getObjectMapper());
-		
-		/*
-		 * Current workaround to creating ReactorResources. Instead of using ReactorResources.create(),
-		 * we need to make a custom HttpClient. Otherwise requests time out after the default 5000 miliseconds
-		 * before being able to resolve.
-		 * 
-		 * https://github.com/reactor/reactor-netty/issues/1431
-		 */
-		HttpClient httpClient = ReactorResources.DEFAULT_HTTP_CLIENT.get()
-				.resolver(DefaultAddressResolverGroup.INSTANCE);
-		ReactorResources reactorResources = ReactorResources.builder()
+	public ReactorResources reactorResources(Scheduler scheduler, HttpClient httpClient) {
+		return ReactorResources.builder()
 			.timerTaskScheduler(scheduler)
 			.httpClient(httpClient)
 			.build();
+	}
+	
+	@Bean
+	public RouterOptions getRouterOptions(DiscordConfigurationProperties discordProperties, ReactorResources reactorResources) {
+		ExchangeStrategies exchangeStrategies = ExchangeStrategies.jackson(JacksonResources.create().getObjectMapper());
 		
 		return new RouterOptions(
 				discordProperties.getToken(),

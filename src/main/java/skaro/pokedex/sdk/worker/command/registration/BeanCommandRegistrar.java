@@ -1,4 +1,4 @@
-package skaro.pokedex.sdk.worker.command;
+package skaro.pokedex.sdk.worker.command.registration;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Collections;
@@ -12,6 +12,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+
+import skaro.pokedex.sdk.worker.command.Command;
+import skaro.pokedex.sdk.worker.command.DefaultWorkerCommandConfiguration;
+import skaro.pokedex.sdk.worker.command.WorkerCommandConfigurationException;
+import skaro.pokedex.sdk.worker.command.WorkerCommandConfigurationProperties;
 
 public class BeanCommandRegistrar implements CommandRegistrar {
 	private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

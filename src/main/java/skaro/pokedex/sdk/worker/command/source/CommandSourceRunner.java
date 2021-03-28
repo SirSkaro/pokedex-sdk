@@ -1,4 +1,4 @@
-package skaro.pokedex.sdk.worker.command;
+package skaro.pokedex.sdk.worker.command.source;
 
 import java.lang.invoke.MethodHandles;
 
@@ -9,8 +9,9 @@ import org.springframework.boot.CommandLineRunner;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import skaro.pokedex.sdk.messaging.MessageReceiver;
-import skaro.pokedex.sdk.worker.messaging.AnsweredWorkRequest;
-import skaro.pokedex.sdk.worker.messaging.WorkRequest;
+import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
+import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
+import skaro.pokedex.sdk.worker.command.manager.CommandManager;
 
 public class CommandSourceRunner implements CommandSource, CommandLineRunner {
 

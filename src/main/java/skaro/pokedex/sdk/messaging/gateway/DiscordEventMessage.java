@@ -1,4 +1,4 @@
-package skaro.pokedex.sdk.messaging.discord;
+package skaro.pokedex.sdk.messaging.gateway;
 
 import java.io.Serializable;
 

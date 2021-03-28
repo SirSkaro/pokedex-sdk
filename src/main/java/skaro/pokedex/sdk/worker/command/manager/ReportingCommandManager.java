@@ -1,12 +1,13 @@
-package skaro.pokedex.sdk.worker.command;
+package skaro.pokedex.sdk.worker.command.manager;
 
 import java.util.Calendar;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.util.function.Tuple2;
-import skaro.pokedex.sdk.worker.messaging.AnsweredWorkRequest;
-import skaro.pokedex.sdk.worker.messaging.WorkRequest;
+import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
+import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
+import skaro.pokedex.sdk.worker.command.registration.CommandRegistrar;
 
 public class ReportingCommandManager implements CommandManager {
 

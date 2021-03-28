@@ -1,4 +1,4 @@
-package skaro.pokedex.sdk.worker.messaging;
+package skaro.pokedex.sdk.messaging.dispatch;
 
 import java.io.Serializable;
 import java.util.Calendar;

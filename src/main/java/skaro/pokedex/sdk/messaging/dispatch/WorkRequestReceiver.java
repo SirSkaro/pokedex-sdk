@@ -1,4 +1,4 @@
-package skaro.pokedex.sdk.worker.messaging;
+package skaro.pokedex.sdk.messaging.dispatch;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;

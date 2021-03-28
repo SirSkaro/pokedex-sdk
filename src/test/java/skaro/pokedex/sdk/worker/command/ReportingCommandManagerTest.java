@@ -14,8 +14,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.test.StepVerifier;
-import skaro.pokedex.sdk.worker.messaging.AnsweredWorkRequest;
-import skaro.pokedex.sdk.worker.messaging.WorkRequest;
+import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
+import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
+import skaro.pokedex.sdk.worker.command.manager.ReportingCommandManager;
+import skaro.pokedex.sdk.worker.command.registration.CommandRegistrar;
 
 @ExtendWith(SpringExtension.class)
 public class ReportingCommandManagerTest {

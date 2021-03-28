@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.validation.constraints.NotEmpty;
 
+import skaro.pokedex.sdk.worker.command.registration.CommandRegistration;
+
 public class WorkerCommandConfigurationProperties {
 	public static final String WORKER_PROPERTIES_PREFIX = "skaro.pokedex.worker";
 	
