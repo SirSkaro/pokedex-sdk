@@ -1,11 +1,7 @@
 package skaro.pokedex.sdk.cache;
 
 import java.time.Duration;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.validation.Valid;
 
@@ -20,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Scheduler;
 
-import reactor.core.Disposable;
+import reactor.core.publisher.Mono;
 
 
 @Configuration
@@ -39,14 +35,15 @@ public class InMemoryCacheConfiguration {
 	@Bean(CACHE_MAINTENANCE_SCHEDULER_BEAN)
 	public Scheduler scheduler(reactor.core.scheduler.Scheduler scheduler) {
 		return (executor, runnable, delay, unit) -> {
-			Disposable disposable = scheduler.schedule(runnable);
-			return futureFromDisposable(disposable);
+			return Mono.delay(Duration.of(delay, unit.toChronoUnit()), scheduler)
+				.flatMap(waitTime -> Mono.fromRunnable(runnable))
+				.toFuture();
 		};
 	}
 	
 	@Bean
 	public @NonNull Caffeine<Object, Object> caffeineConfig(Executor executor, Scheduler scheduler, CacheConfigurationProperties cacheProperties) {
-	    return Caffeine.newBuilder()
+		return Caffeine.newBuilder()
 	    		.executor(executor)
 	    		.scheduler(scheduler)
 	    		.expireAfterAccess(Duration.ofMinutes(cacheProperties.getTimeToLive()))
@@ -58,35 +55,6 @@ public class InMemoryCacheConfiguration {
 	    CaffeineCacheManager cacheManager = new CaffeineCacheManager();
 	    cacheManager.setCaffeine(caffeine);
 	    return cacheManager;
-	}
-	
-	private Future<Void> futureFromDisposable(Disposable disposable) {
-		return new Future<Void>() {
-			@Override
-			public boolean cancel(boolean mayInterruptIfRunning) {
-				return false;
-			}
-
-			@Override
-			public Void get() throws InterruptedException, ExecutionException {
-				return null;
-			}
-
-			@Override
-			public Void get(long arg0, TimeUnit arg1) throws InterruptedException, ExecutionException, TimeoutException {
-				return null;
-			}
-
-			@Override
-			public boolean isCancelled() {
-				return disposable.isDisposed();
-			}
-
-			@Override
-			public boolean isDone() {
-				return true;
-			}
-		};
 	}
 	
 }
