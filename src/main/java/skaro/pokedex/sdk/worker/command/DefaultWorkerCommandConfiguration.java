@@ -3,9 +3,11 @@ package skaro.pokedex.sdk.worker.command;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Import;
 
 import reactor.core.scheduler.Scheduler;
 import skaro.pokedex.sdk.messaging.MessageReceiver;
@@ -16,8 +18,11 @@ import skaro.pokedex.sdk.worker.command.registration.BeanCommandRegistrar;
 import skaro.pokedex.sdk.worker.command.registration.CommandRegistrar;
 import skaro.pokedex.sdk.worker.command.source.CommandSource;
 import skaro.pokedex.sdk.worker.command.source.CommandSourceRunner;
+import skaro.pokedex.sdk.worker.command.validation.ArgumentValidationChainAspectConfiguration;
 
-@Configuration
+@Configurable
+@EnableAspectJAutoProxy
+@Import(ArgumentValidationChainAspectConfiguration.class)
 public class DefaultWorkerCommandConfiguration {
 	public static final String COMMAND_BEAN_POSTFIX = "Command";
 	
