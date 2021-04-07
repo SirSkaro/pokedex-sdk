@@ -5,7 +5,7 @@ import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 
 @FunctionalInterface
-public interface CommandFilter {
+public interface ValidationFilter {
 
 	Mono<AnsweredWorkRequest> filter(WorkRequest request);
 	

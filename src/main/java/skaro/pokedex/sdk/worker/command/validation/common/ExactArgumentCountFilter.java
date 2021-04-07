@@ -9,9 +9,9 @@ import reactor.core.publisher.Mono;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
-import skaro.pokedex.sdk.worker.command.validation.CommandFilter;
+import skaro.pokedex.sdk.worker.command.validation.ValidationFilter;
 
-public class ExactArgumentCountFilter implements CommandFilter {
+public class ExactArgumentCountFilter implements ValidationFilter {
 	private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	private int expectedCount;

@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Target(ANNOTATION_TYPE)
 public @interface Filter {
 
-	Class<? extends CommandFilter> value();
+	Class<? extends ValidationFilter> value();
 	String beanName() default "";
 	
 }

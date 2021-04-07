@@ -1,8 +1,6 @@
 package skaro.pokedex.sdk.worker.command.validation;
 
 import java.lang.invoke.MethodHandles;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -14,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.annotation.Configuration;
 
+import io.micrometer.core.instrument.util.StringUtils;
 import reactor.core.publisher.Mono;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
@@ -31,7 +30,6 @@ public class ArgumentValidationChainAspectConfiguration {
 
 	@Around("classAnnotatedWithValidationFilterChain(filterChain) && methodHasWorkRequestArgument(workRequest)")
 	public Object executeFilterChain(ProceedingJoinPoint joinPoint, ValidationFilterChain filterChain, WorkRequest workRequest) throws Throwable {
-		LOG.info("Intercepted request {}", workRequest.getCommmand());
 		Mono<AnsweredWorkRequest> currentAnswer = Stream.of(filterChain.value())
 				.map(this::getFilterBean)
 				.map(filter -> Mono.defer(() -> filter.filter(workRequest)))
@@ -46,9 +44,13 @@ public class ArgumentValidationChainAspectConfiguration {
 	@Pointcut("args(workRequest,..)")
 	private void methodHasWorkRequestArgument(WorkRequest workRequest) {}
 	
-	private CommandFilter getFilterBean(Filter filter) {
-		Class<? extends CommandFilter> filterCls = filter.value();
-		return beanFactory.getBean(filterCls);
+	private ValidationFilter getFilterBean(Filter filter) {
+		Class<? extends ValidationFilter> filterCls = filter.value();
+		
+		if(StringUtils.isBlank(filter.beanName())) {
+			return beanFactory.getBean(filterCls);
+		}
+		return beanFactory.getBean(filter.beanName(), filterCls);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -57,7 +59,7 @@ public class ArgumentValidationChainAspectConfiguration {
 			try {
 				return (Mono<AnsweredWorkRequest>) joinPoint.proceed(joinPoint.getArgs());
 			} catch (Throwable e) {
-				throw new RuntimeException();
+				throw new RuntimeException(e);
 			}
 		});
 	}
