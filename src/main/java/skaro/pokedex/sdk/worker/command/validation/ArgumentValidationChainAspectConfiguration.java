@@ -1,17 +1,21 @@
 package skaro.pokedex.sdk.worker.command.validation;
 
 import java.lang.invoke.MethodHandles;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.annotation.Configuration;
 
+import reactor.core.publisher.Mono;
+import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 
 @Aspect
@@ -26,15 +30,36 @@ public class ArgumentValidationChainAspectConfiguration {
 	}
 
 	@Around("classAnnotatedWithValidationFilterChain(filterChain) && methodHasWorkRequestArgument(workRequest)")
-	public Object executeFilterChain(ProceedingJoinPoint joinPoint, OrderedArgumentValidationFilterChain filterChain, WorkRequest workRequest) throws Throwable {
-		LOG.info("here");
-		return joinPoint.proceed(joinPoint.getArgs());
+	public Object executeFilterChain(ProceedingJoinPoint joinPoint, ValidationFilterChain filterChain, WorkRequest workRequest) throws Throwable {
+		LOG.info("Intercepted request {}", workRequest.getCommmand());
+		Mono<AnsweredWorkRequest> currentAnswer = Stream.of(filterChain.value())
+				.map(this::getFilterBean)
+				.map(filter -> Mono.defer(() -> filter.filter(workRequest)))
+				.reduce(Mono.empty(), (partialChain, nextFilter) -> partialChain.switchIfEmpty(nextFilter));
+		
+		return currentAnswer.switchIfEmpty(proceedWithCommand(joinPoint));
 	}
 	
 	@Pointcut("@within(filterChain)")
-	private void classAnnotatedWithValidationFilterChain(OrderedArgumentValidationFilterChain filterChain) {}
+	private void classAnnotatedWithValidationFilterChain(ValidationFilterChain filterChain) {}
 	
 	@Pointcut("args(workRequest,..)")
 	private void methodHasWorkRequestArgument(WorkRequest workRequest) {}
+	
+	private CommandFilter getFilterBean(Filter filter) {
+		Class<? extends CommandFilter> filterCls = filter.value();
+		return beanFactory.getBean(filterCls);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private Mono<AnsweredWorkRequest> proceedWithCommand(ProceedingJoinPoint joinPoint) throws Throwable {
+		return Mono.defer( () -> {
+			try {
+				return (Mono<AnsweredWorkRequest>) joinPoint.proceed(joinPoint.getArgs());
+			} catch (Throwable e) {
+				throw new RuntimeException();
+			}
+		});
+	}
 	
 }

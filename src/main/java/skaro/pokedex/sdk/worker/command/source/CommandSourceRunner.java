@@ -9,8 +9,8 @@ import org.springframework.boot.CommandLineRunner;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import skaro.pokedex.sdk.messaging.MessageReceiver;
-import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
+import skaro.pokedex.sdk.messaging.dispatch.WorkRequestReport;
 import skaro.pokedex.sdk.worker.command.manager.CommandManager;
 
 public class CommandSourceRunner implements CommandSource, CommandLineRunner {
@@ -33,11 +33,11 @@ public class CommandSourceRunner implements CommandSource, CommandLineRunner {
 		
 		receiver.streamMessages(scheduler)
 			.flatMap(manager::forward)
-			.onErrorResume(this::handleError)
+			.onErrorContinue(this::handleError)
 			.subscribe();
 	}
 	
-	private Mono<AnsweredWorkRequest> handleError(Throwable error) {
+	private Mono<WorkRequestReport> handleError(Throwable error, Object ob) {
 		LOG.error("Error in consuming command", error);
 		return Mono.empty();
 	}

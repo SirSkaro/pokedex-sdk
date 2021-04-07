@@ -16,6 +16,7 @@ import reactor.core.scheduler.Scheduler;
 import reactor.test.StepVerifier;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
+import skaro.pokedex.sdk.messaging.dispatch.WorkRequestReport;
 import skaro.pokedex.sdk.worker.command.manager.ReportingCommandManager;
 import skaro.pokedex.sdk.worker.command.registration.CommandRegistrar;
 
@@ -39,18 +40,19 @@ public class ReportingCommandManagerTest {
 		Command command = Mockito.mock(Command.class);
 		String requestedCommand = "bar";
 		WorkRequest request = createWorkRequest(requestedCommand);
+		AnsweredWorkRequest answeredRequest = createAnsweredWorkRequest(request);
 		
 		Mockito.when(commandRegistrar.getCommandByNameOrAlias(requestedCommand))
 			.thenReturn(Optional.of(command));
 		Mockito.when(command.execute(request))
-			.thenAnswer(answer -> Mono.just(answer.getArgument(0)));
+			.thenAnswer(answer -> Mono.just(answeredRequest));
 		
-		Consumer<AnsweredWorkRequest> assertAnsweredWorkRequestContainsOriginalWorkRequest = answeredRequest -> {
-			Assertions.assertEquals(request, answeredRequest.getWorkRequest());
+		Consumer<WorkRequestReport> assertReportContainsOriginalAnsweredWorkRequest = report -> {
+			Assertions.assertEquals(answeredRequest, report.getAnsweredWorkRequest());
 		};
 		
 		StepVerifier.create(manager.forward(request))
-			.assertNext(assertAnsweredWorkRequestContainsOriginalWorkRequest)
+			.assertNext(assertReportContainsOriginalAnsweredWorkRequest)
 			.expectComplete()
 			.verify();
 	}
@@ -72,6 +74,13 @@ public class ReportingCommandManagerTest {
 		request.setCommmand(commandName);
 		
 		return request;
+	}
+	
+	private AnsweredWorkRequest createAnsweredWorkRequest(WorkRequest request) {
+		AnsweredWorkRequest answeredRequest = new AnsweredWorkRequest();
+		answeredRequest.setWorkRequest(request);
+		
+		return answeredRequest;
 	}
 	
 }
