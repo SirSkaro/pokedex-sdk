@@ -1,14 +1,11 @@
 package skaro.pokedex.sdk.worker.command.validation;
 
-import java.lang.invoke.MethodHandles;
 import java.util.stream.Stream;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,8 +17,6 @@ import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 @Aspect
 @Configuration
 public class ArgumentValidationChainAspectConfiguration {
-	private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	
 	private BeanFactory beanFactory;
 	
 	public ArgumentValidationChainAspectConfiguration(BeanFactory beanFactory) {

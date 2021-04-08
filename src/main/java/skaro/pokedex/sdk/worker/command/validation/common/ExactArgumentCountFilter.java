@@ -24,14 +24,14 @@ public class ExactArgumentCountFilter implements ValidationFilter {
 
 	@Override
 	public Mono<AnsweredWorkRequest> filter(WorkRequest request) {
-		if(expectedCount != request.getArguments().size()) {
-			LOG.warn(invalidMessage);
-			AnsweredWorkRequest answer = new AnsweredWorkRequest();
-			answer.setStatus(WorkStatus.BAD_REQUEST);
-			return Mono.just(answer);
+		if(expectedCount == request.getArguments().size()) {
+			return Mono.empty();
 		}
 		
-		return Mono.empty();
+		LOG.warn(invalidMessage);
+		AnsweredWorkRequest answer = new AnsweredWorkRequest();
+		answer.setStatus(WorkStatus.BAD_REQUEST);
+		return Mono.just(answer);
 	}
 
 }
