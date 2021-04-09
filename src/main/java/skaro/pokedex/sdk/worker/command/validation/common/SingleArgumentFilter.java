@@ -11,20 +11,18 @@ import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
 import skaro.pokedex.sdk.worker.command.validation.ValidationFilter;
 
-public class ExactArgumentCountFilter implements ValidationFilter {
+public class SingleArgumentFilter implements ValidationFilter {
 	private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-	private int expectedCount;
 	private String invalidMessage;
 	
-	public ExactArgumentCountFilter(int expectedCount, String invalidMessage) {
-		this.expectedCount = expectedCount;
+	public SingleArgumentFilter(String invalidMessage) {
 		this.invalidMessage = invalidMessage;
 	}
 
 	@Override
 	public Mono<AnsweredWorkRequest> filter(WorkRequest request) {
-		if(expectedCount == request.getArguments().size()) {
+		if(request.getArguments().size() == 1) {
 			return Mono.empty();
 		}
 		

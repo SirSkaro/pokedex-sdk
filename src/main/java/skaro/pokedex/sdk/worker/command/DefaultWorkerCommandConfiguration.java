@@ -20,9 +20,14 @@ import skaro.pokedex.sdk.worker.command.source.CommandSourceRunner;
 import skaro.pokedex.sdk.worker.command.validation.ArgumentValidationChainAspectConfiguration;
 
 @Configurable
-@Import(ArgumentValidationChainAspectConfiguration.class)
+@Import({
+	ErrorRecoveryAspectConfiguration.class,
+	ArgumentValidationChainAspectConfiguration.class
+	})
 public class DefaultWorkerCommandConfiguration {
 	public static final String COMMAND_BEAN_POSTFIX = "Command";
+	public static final int ERROR_RECOVERY_ASPECT_ORDER = 0;
+	public static final int ARGUMENT_VALIDATION_ASPECT_ORDER = 1;
 	
 	@Bean
 	@Valid
