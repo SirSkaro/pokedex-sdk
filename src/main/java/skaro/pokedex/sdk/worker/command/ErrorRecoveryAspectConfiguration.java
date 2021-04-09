@@ -13,8 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
+import discord4j.discordjson.json.EmbedData;
+import discord4j.discordjson.json.EmbedFieldData;
+import discord4j.discordjson.json.MessageCreateRequest;
 import discord4j.rest.request.Router;
-import reactor.core.publisher.Mono;
+import discord4j.rest.route.Routes;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
@@ -57,10 +60,47 @@ public class ErrorRecoveryAspectConfiguration {
 			return joinPoint.proceed(joinPoint.getArgs());
 		} catch (Exception e) {
 			LOG.error("Caught exception", e);
+			
 			AnsweredWorkRequest answer = new AnsweredWorkRequest();
 			answer.setStatus(WorkStatus.ERROR);
 			answer.setWorkRequest(workRequest);
-			return Mono.just(answer);
+			
+			MessageCreateRequest errorResponse = createErrorResponse(workRequest, e);
+			
+			return Routes.MESSAGE_CREATE.newRequest(workRequest.getChannelId())
+				.body(errorResponse)
+				.exchange(router)
+				.mono()
+				.thenReturn(answer);
 		}
+	}
+	
+	private MessageCreateRequest createErrorResponse(WorkRequest workRequest, Exception error) {
+		EmbedFieldData technicalErrorField = EmbedFieldData.builder()
+				.inline(true)
+				.name("Technical Error")
+				.value(error.getMessage())
+				.build();
+		EmbedFieldData userInputField = EmbedFieldData.builder()
+				.inline(true)
+				.name("Command")
+				.value(String.format("%s %s", workRequest.getCommmand(), workRequest.getArguments()))
+				.build();
+		EmbedFieldData supportServerLinkField = EmbedFieldData.builder()
+				.inline(true)
+				.name("Link to Support Server")
+				.value("[Support Server link](https://discord.gg/D5CfFkN)")
+				.build();
+		
+		EmbedData embed = EmbedData.builder().from(MessageEmbedTemplates.ERROR_MESSAGE)
+				.description("Some unexpected error occured while processing your request. Please report this error to the support server __as a screenshot__.")
+				.addField(technicalErrorField)
+				.addField(userInputField)
+				.addField(supportServerLinkField)
+				.build();
+		
+		return MessageCreateRequest.builder()
+				.embed(embed)
+				.build();
 	}
 }

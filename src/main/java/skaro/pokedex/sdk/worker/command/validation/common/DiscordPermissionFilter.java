@@ -1,13 +1,10 @@
 package skaro.pokedex.sdk.worker.command.validation.common;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import discord4j.discordjson.json.MemberData;
+import discord4j.discordjson.json.MessageCreateRequest;
 import discord4j.discordjson.json.RoleData;
 import discord4j.rest.request.Router;
 import discord4j.rest.route.Routes;
@@ -20,8 +17,6 @@ import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
 import skaro.pokedex.sdk.worker.command.validation.ValidationFilter;
 
 public class DiscordPermissionFilter implements ValidationFilter {
-	private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	
 	private PermissionSet requiredPermissions;
 	private Router router;
 	
@@ -70,11 +65,20 @@ public class DiscordPermissionFilter implements ValidationFilter {
 	
 	private Mono<AnsweredWorkRequest> verifyUserHasRequiredPermissions(PermissionSet userPermissions) {
 		if(userPermissions.containsAll(requiredPermissions)) {
-			LOG.info("You may change the prefix");
 			return Mono.empty();
 		}
 		
-		LOG.warn("You don't have permissions to change the prefix");
+		AnsweredWorkRequest answer = new AnsweredWorkRequest();
+		answer.setStatus(WorkStatus.BAD_REQUEST);
+		return Mono.just(answer);
+	}
+	
+	private Mono<AnsweredWorkRequest> sendInvalidationMessage() {
+		
+		MessageCreateRequest response = MessageCreateRequest.builder()
+				.content(String.format("You need the following permissions to use this command"))
+				.build();
+		
 		AnsweredWorkRequest answer = new AnsweredWorkRequest();
 		answer.setStatus(WorkStatus.BAD_REQUEST);
 		return Mono.just(answer);
