@@ -23,7 +23,7 @@ import skaro.pokedex.sdk.worker.command.validation.ArgumentValidationChainAspect
 @Import({
 	ErrorRecoveryAspectConfiguration.class,
 	ArgumentValidationChainAspectConfiguration.class
-	})
+})
 public class DefaultWorkerCommandConfiguration {
 	public static final String COMMAND_BEAN_POSTFIX = "Command";
 	public static final int ERROR_RECOVERY_ASPECT_ORDER = 0;

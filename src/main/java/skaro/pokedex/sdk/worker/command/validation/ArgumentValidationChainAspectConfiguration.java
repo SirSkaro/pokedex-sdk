@@ -24,8 +24,6 @@ import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 @Configuration
 @Order(ARGUMENT_VALIDATION_ASPECT_ORDER)
 public class ArgumentValidationChainAspectConfiguration {
-	private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	
 	private BeanFactory beanFactory;
 	
 	public ArgumentValidationChainAspectConfiguration(BeanFactory beanFactory) {
@@ -34,7 +32,6 @@ public class ArgumentValidationChainAspectConfiguration {
 
 	@Around("classAnnotatedWithValidationFilterChain(filterChain) && methodHasWorkRequestArgument(workRequest)")
 	public Object executeFilterChain(ProceedingJoinPoint joinPoint, ValidationFilterChain filterChain, WorkRequest workRequest) throws Throwable {
-		LOG.info("Building validation chain");
 		Mono<AnsweredWorkRequest> validationChain = Stream.of(filterChain.value())
 				.map(this::getFilterBean)
 				.map(filter -> Mono.defer(() -> filter.filter(workRequest)))

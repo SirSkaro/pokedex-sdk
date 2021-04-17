@@ -2,7 +2,9 @@ package skaro.pokedex.sdk.worker.command.validation.common;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import discord4j.discordjson.json.EmbedData;
 import discord4j.discordjson.json.MemberData;
 import discord4j.discordjson.json.MessageCreateRequest;
 import discord4j.discordjson.json.RoleData;
@@ -14,6 +16,7 @@ import reactor.util.function.Tuple2;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
+import skaro.pokedex.sdk.worker.command.MessageEmbedTemplates;
 import skaro.pokedex.sdk.worker.command.validation.ValidationFilter;
 
 public class DiscordPermissionFilter implements ValidationFilter {
@@ -28,7 +31,7 @@ public class DiscordPermissionFilter implements ValidationFilter {
 	@Override
 	public Mono<AnsweredWorkRequest> filter(WorkRequest request) {
 		return getMemberPermissions(request.getGuildId(), request.getAuthorId())
-			.flatMap(this::verifyUserHasRequiredPermissions);
+			.flatMap(permissions -> verifyUserHasRequiredPermissions(permissions, request));
 	}
 	
 	private Mono<PermissionSet> getMemberPermissions(String guildId, String userId) {
@@ -63,25 +66,39 @@ public class DiscordPermissionFilter implements ValidationFilter {
 		return PermissionSet.of(permissionBitSet);
 	}
 	
-	private Mono<AnsweredWorkRequest> verifyUserHasRequiredPermissions(PermissionSet userPermissions) {
+	private Mono<AnsweredWorkRequest> verifyUserHasRequiredPermissions(PermissionSet userPermissions, WorkRequest request) {
 		if(userPermissions.containsAll(requiredPermissions)) {
 			return Mono.empty();
 		}
 		
-		AnsweredWorkRequest answer = new AnsweredWorkRequest();
-		answer.setStatus(WorkStatus.BAD_REQUEST);
-		return Mono.just(answer);
+		return sendInvalidationMessage(request);
 	}
 	
-	private Mono<AnsweredWorkRequest> sendInvalidationMessage() {
-		
-		MessageCreateRequest response = MessageCreateRequest.builder()
-				.content(String.format("You need the following permissions to use this command"))
-				.build();
-		
+	private Mono<AnsweredWorkRequest> sendInvalidationMessage(WorkRequest request) {
 		AnsweredWorkRequest answer = new AnsweredWorkRequest();
 		answer.setStatus(WorkStatus.BAD_REQUEST);
-		return Mono.just(answer);
+		answer.setWorkRequest(request);
+		MessageCreateRequest errorResponse = createWarningMessage(request);
+		
+		return Routes.MESSAGE_CREATE.newRequest(request.getChannelId())
+			.body(errorResponse)
+			.exchange(router)
+			.mono()
+			.thenReturn(answer);
+	}
+	
+	private MessageCreateRequest createWarningMessage(WorkRequest request) {
+		String bulletedRequiredPermissions = requiredPermissions.stream()
+				.map(permission -> String.format("%s %s", ":small_blue_diamond:", permission.name()))
+				.collect(Collectors.joining("\n"));
+				
+		EmbedData embed = EmbedData.builder().from(MessageEmbedTemplates.INVALID_REQUEST_MESSAGE)
+				.description(String.format("You need to following permissions to use the **%s** command:\n%s", request.getCommmand(), bulletedRequiredPermissions))
+				.build();
+		
+		return MessageCreateRequest.builder()
+				.embed(embed)
+				.build();
 	}
 
 }
