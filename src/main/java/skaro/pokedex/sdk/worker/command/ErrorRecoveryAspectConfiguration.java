@@ -55,12 +55,10 @@ public class ErrorRecoveryAspectConfiguration {
 	@Pointcut("target(skaro.pokedex.sdk.worker.command.validation.ValidationFilter)")
 	private void implementsValidationFilter() {}
 	
-	private Object attemptProceed(ProceedingJoinPoint joinPoint, WorkRequest workRequest) {
-		try {
-			return joinPoint.proceed(joinPoint.getArgs());
-		} catch(Throwable e) {
-			return sendErrorMessage(workRequest, e);
-		}
+	@SuppressWarnings("unchecked")
+	private Object attemptProceed(ProceedingJoinPoint joinPoint, WorkRequest workRequest) throws Throwable {
+			return ((Mono<AnsweredWorkRequest>)joinPoint.proceed(joinPoint.getArgs()))
+					.onErrorResume(error -> sendErrorMessage(workRequest, error) );
 	}
 	
 	private Mono<AnsweredWorkRequest> sendErrorMessage(WorkRequest workRequest, Throwable error) {
