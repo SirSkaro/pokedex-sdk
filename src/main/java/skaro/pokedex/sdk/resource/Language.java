@@ -9,7 +9,7 @@ public enum Language {
 	ITALIAN("Italiano", "it"),
 	FRENCH("Français", "fr"),
 	CHINESE_SIMPMLIFIED("简化字", "zh-Hans"),
-	JAPANESE_HIR_KAT("日本語","ja-Hrkt"),
+	JAPANESE("日本語","ja-Hrkt"),
 	KOREAN("한국말","ko");
 	
 	private String name;
