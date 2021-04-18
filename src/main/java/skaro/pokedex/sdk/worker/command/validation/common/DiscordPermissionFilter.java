@@ -71,7 +71,7 @@ public class DiscordPermissionFilter implements ValidationFilter {
 	}
 	
 	private Mono<AnsweredWorkRequest> verifyUserHasRequiredPermissions(PermissionSet userPermissions, WorkRequest request) {
-		if(!userPermissions.containsAll(requiredPermissions)) {
+		if(userPermissions.containsAll(requiredPermissions)) {
 			return Mono.empty();
 		}
 		
