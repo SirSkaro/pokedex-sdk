@@ -3,6 +3,8 @@ package skaro.pokedex.sdk.messaging.dispatch;
 import java.io.Serializable;
 import java.util.List;
 
+import skaro.pokedex.sdk.resource.Language;
+
 public class WorkRequest implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
@@ -11,6 +13,7 @@ public class WorkRequest implements Serializable {
 	private String channelId;
 	private String guildId;
 	private String authorId;
+	private Language language;
 	
 	public String getCommmand() {
 		return commmand;
@@ -41,6 +44,12 @@ public class WorkRequest implements Serializable {
 	}
 	public void setAuthorId(String authorId) {
 		this.authorId = authorId;
+	}
+	public Language getLanguage() {
+		return language;
+	}
+	public void setLanguage(Language language) {
+		this.language = language;
 	}
 	
 }

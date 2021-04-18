@@ -32,7 +32,9 @@ public class DefaultWorkerCommandConfiguration {
 	public static final int ERROR_RECOVERY_ASPECT_ORDER = 0;
 	public static final int ARGUMENT_VALIDATION_ASPECT_ORDER = 1;
 	public static final String ERROR_LOCALE_SPEC_BEAN = "errorMessageLocaleSpecBean";
+	public static final String WARNING_LOCALE_SPEC_BEAN = "warningMessageLocaleSpecBean";
 	private static final String ERROR_LOCALE_SPEC_PROPERTIES_PREFIX = "skaro.pokedex.sdk.discord.embed-locale.error";
+	private static final String WARNING_LOCALE_SPEC_PROPERTIES_PREFIX = "skaro.pokedex.sdk.discord.embed-locale.warning";
 	
 	@Bean
 	@Valid
@@ -60,6 +62,13 @@ public class DefaultWorkerCommandConfiguration {
 	@ConfigurationProperties(ERROR_LOCALE_SPEC_PROPERTIES_PREFIX)
 	@Valid
 	public DiscordEmbedLocaleSpec errorMessageLocaleSpec() {
+		return new DiscordEmbedLocaleSpec();
+	}
+	
+	@Bean(WARNING_LOCALE_SPEC_BEAN)
+	@ConfigurationProperties(WARNING_LOCALE_SPEC_PROPERTIES_PREFIX)
+	@Valid
+	public DiscordEmbedLocaleSpec warningMessageLocaleSpec() {
 		return new DiscordEmbedLocaleSpec();
 	}
 	

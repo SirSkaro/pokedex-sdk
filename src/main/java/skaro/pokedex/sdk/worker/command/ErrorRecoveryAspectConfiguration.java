@@ -1,5 +1,6 @@
 package skaro.pokedex.sdk.worker.command;
 
+import static skaro.pokedex.sdk.worker.command.DefaultWorkerCommandConfiguration.ERROR_LOCALE_SPEC_BEAN;
 import static skaro.pokedex.sdk.worker.command.DefaultWorkerCommandConfiguration.ERROR_RECOVERY_ASPECT_ORDER;
 
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -16,12 +17,10 @@ import discord4j.discordjson.json.EmbedThumbnailData;
 import discord4j.discordjson.json.MessageCreateRequest;
 import discord4j.rest.request.Router;
 import discord4j.rest.route.Routes;
-import discord4j.rest.util.Color;
 import reactor.core.publisher.Mono;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
-import skaro.pokedex.sdk.resource.Language;
 import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedLocaleSpec;
 import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedSpec;
 
@@ -32,7 +31,7 @@ public class ErrorRecoveryAspectConfiguration {
 	private Router router;
 	private DiscordEmbedLocaleSpec localeSpec;
 
-	public ErrorRecoveryAspectConfiguration(Router router, @Qualifier(DefaultWorkerCommandConfiguration.ERROR_LOCALE_SPEC_BEAN) DiscordEmbedLocaleSpec localeSpec) {
+	public ErrorRecoveryAspectConfiguration(Router router, @Qualifier(ERROR_LOCALE_SPEC_BEAN) DiscordEmbedLocaleSpec localeSpec) {
 		this.router = router;
 		this.localeSpec = localeSpec;
 	}
@@ -77,7 +76,7 @@ public class ErrorRecoveryAspectConfiguration {
 	}
 	
 	private MessageCreateRequest createErrorResponse(WorkRequest workRequest, Throwable error) {
-		DiscordEmbedSpec embedSpec = localeSpec.getEmbedSpecs().get(Language.ENGLISH);
+		DiscordEmbedSpec embedSpec = localeSpec.getEmbedSpecs().get(workRequest.getLanguage());
 		
 		EmbedFieldData technicalErrorField = EmbedFieldData.builder()
 				.inline(true)
