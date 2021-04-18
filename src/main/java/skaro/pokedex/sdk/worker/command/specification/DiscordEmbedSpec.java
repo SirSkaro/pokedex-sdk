@@ -9,6 +9,8 @@ public class DiscordEmbedSpec {
 
 	@NotEmpty
 	private String title;
+	@NotEmpty
+	private String description;
 	@NotNull
 	private List<@NotNull DiscordEmbedField> fields;
 	
@@ -17,6 +19,12 @@ public class DiscordEmbedSpec {
 	}
 	public void setTitle(String title) {
 		this.title = title;
+	}
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
 	}
 	public List<DiscordEmbedField> getFields() {
 		return fields;

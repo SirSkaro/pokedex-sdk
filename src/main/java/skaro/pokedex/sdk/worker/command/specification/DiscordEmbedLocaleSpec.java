@@ -9,10 +9,17 @@ import skaro.pokedex.sdk.resource.Language;
 
 public class DiscordEmbedLocaleSpec {
 
+	private Integer color;
 	private URI thumbnail;
 	@NotNull
 	private Map<Language, @NotNull DiscordEmbedSpec> embedSpecs;
 	
+	public Integer getColor() {
+		return color;
+	}
+	public void setColor(Integer color) {
+		this.color = color;
+	}
 	public URI getThumbnail() {
 		return thumbnail;
 	}

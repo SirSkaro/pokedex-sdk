@@ -16,7 +16,7 @@ import reactor.util.function.Tuple2;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
-import skaro.pokedex.sdk.worker.command.MessageEmbedTemplates;
+import skaro.pokedex.sdk.worker.command.specification.MessageEmbedTemplates;
 import skaro.pokedex.sdk.worker.command.validation.ValidationFilter;
 
 public class DiscordPermissionFilter implements ValidationFilter {

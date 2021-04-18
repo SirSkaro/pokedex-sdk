@@ -6,27 +6,35 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
 import discord4j.discordjson.json.EmbedData;
 import discord4j.discordjson.json.EmbedFieldData;
+import discord4j.discordjson.json.EmbedThumbnailData;
 import discord4j.discordjson.json.MessageCreateRequest;
 import discord4j.rest.request.Router;
 import discord4j.rest.route.Routes;
+import discord4j.rest.util.Color;
 import reactor.core.publisher.Mono;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
+import skaro.pokedex.sdk.resource.Language;
+import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedLocaleSpec;
+import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedSpec;
 
 @Aspect
 @Configuration
 @Order(ERROR_RECOVERY_ASPECT_ORDER)
 public class ErrorRecoveryAspectConfiguration {
 	private Router router;
+	private DiscordEmbedLocaleSpec localeSpec;
 
-	public ErrorRecoveryAspectConfiguration(Router router) {
+	public ErrorRecoveryAspectConfiguration(Router router, @Qualifier(DefaultWorkerCommandConfiguration.ERROR_LOCALE_SPEC_BEAN) DiscordEmbedLocaleSpec localeSpec) {
 		this.router = router;
+		this.localeSpec = localeSpec;
 	}
 	
 	@Around("implementsCommand() && methodHasWorkRequestArgument(workRequest)")
@@ -69,27 +77,34 @@ public class ErrorRecoveryAspectConfiguration {
 	}
 	
 	private MessageCreateRequest createErrorResponse(WorkRequest workRequest, Throwable error) {
+		DiscordEmbedSpec embedSpec = localeSpec.getEmbedSpecs().get(Language.ENGLISH);
+		
 		EmbedFieldData technicalErrorField = EmbedFieldData.builder()
 				.inline(true)
-				.name("Technical Error")
+				.name(embedSpec.getFields().get(0).getName())
 				.value(error.getMessage())
 				.build();
 		EmbedFieldData userInputField = EmbedFieldData.builder()
 				.inline(true)
-				.name("Command")
+				.name(embedSpec.getFields().get(1).getName())
 				.value(String.format("%s %s", workRequest.getCommmand(), workRequest.getArguments()))
 				.build();
 		EmbedFieldData supportServerLinkField = EmbedFieldData.builder()
 				.inline(true)
-				.name("Link to Support Server")
-				.value("[Support Server link](https://discord.gg/D5CfFkN)")
+				.name(embedSpec.getFields().get(2).getName())
+				.value(embedSpec.getFields().get(2).getValue())
 				.build();
 		
-		EmbedData embed = EmbedData.builder().from(MessageEmbedTemplates.ERROR_MESSAGE)
-				.description("Some unexpected error occured while processing your request. Please report this error to the support server __as a screenshot__.")
+		EmbedData embed = EmbedData.builder()
+				.color(localeSpec.getColor())
+				.title(embedSpec.getTitle())
+				.description(embedSpec.getDescription())
 				.addField(technicalErrorField)
 				.addField(userInputField)
 				.addField(supportServerLinkField)
+				.thumbnail(EmbedThumbnailData.builder()
+						.url(localeSpec.getThumbnail().toString())
+						.build())
 				.build();
 		
 		return MessageCreateRequest.builder()

@@ -6,7 +6,6 @@ public class DiscordEmbedField  {
 
 	@NotEmpty
 	private String name;
-	@NotEmpty
 	private String value;
 	
 	public String getName() {
