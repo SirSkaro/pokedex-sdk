@@ -17,6 +17,8 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Scheduler;
 
 import reactor.core.publisher.Mono;
+import skaro.pokedex.sdk.client.CacheFacade;
+import skaro.pokedex.sdk.client.MonoCacheFacade;
 
 
 @Configuration
@@ -55,6 +57,11 @@ public class InMemoryCacheConfiguration {
 	    CaffeineCacheManager cacheManager = new CaffeineCacheManager();
 	    cacheManager.setCaffeine(caffeine);
 	    return cacheManager;
+	}
+	
+	@Bean
+	public CacheFacade cacheFacade(CacheManager cacheManager) {
+		return new MonoCacheFacade(cacheManager);
 	}
 	
 }

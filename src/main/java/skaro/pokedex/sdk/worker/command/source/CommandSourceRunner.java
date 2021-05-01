@@ -32,12 +32,16 @@ public class CommandSourceRunner implements CommandSource, CommandLineRunner {
 		LOG.info("Listening for commands");
 		
 		receiver.streamMessages(scheduler)
-			.flatMap(manager::forward)
-			.onErrorContinue(this::handleError)
+			.flatMap(this::forwardMessage)
 			.subscribe();
 	}
 	
-	private Mono<WorkRequestReport> handleError(Throwable error, Object ob) {
+	private Mono<WorkRequestReport> forwardMessage(WorkRequest workRequest) {
+		return manager.forward(workRequest)
+				.onErrorResume(this::handleError);
+	}
+	
+	private Mono<WorkRequestReport> handleError(Throwable error) {
 		LOG.error("Error in consuming command", error);
 		return Mono.empty();
 	}

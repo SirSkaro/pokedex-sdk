@@ -1,4 +1,4 @@
-package skaro.pokedex.sdk.resource;
+package skaro.pokedex.sdk.client;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

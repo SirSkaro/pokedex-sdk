@@ -3,7 +3,7 @@ package skaro.pokedex.sdk.messaging.dispatch;
 import java.io.Serializable;
 import java.util.List;
 
-import skaro.pokedex.sdk.resource.Language;
+import skaro.pokedex.sdk.client.Language;
 
 public class WorkRequest implements Serializable {
 	private static final long serialVersionUID = 1L;

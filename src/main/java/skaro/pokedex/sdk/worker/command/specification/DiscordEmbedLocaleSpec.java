@@ -5,7 +5,7 @@ import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
-import skaro.pokedex.sdk.resource.Language;
+import skaro.pokedex.sdk.client.Language;
 
 public class DiscordEmbedLocaleSpec {
 
