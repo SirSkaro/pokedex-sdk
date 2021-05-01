@@ -21,6 +21,7 @@ import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 @Configuration
 @Order(ARGUMENT_VALIDATION_ASPECT_ORDER)
 public class ArgumentValidationChainAspectConfiguration {
+	
 	private BeanFactory beanFactory;
 	
 	public ArgumentValidationChainAspectConfiguration(BeanFactory beanFactory) {
