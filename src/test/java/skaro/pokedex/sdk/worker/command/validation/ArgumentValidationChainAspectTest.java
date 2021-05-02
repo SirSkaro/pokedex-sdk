@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import reactor.core.publisher.Mono;
@@ -90,6 +91,36 @@ public class ArgumentValidationChainAspectTest {
 		StepVerifier.create(result)
 			.expectNext(answer)
 			.expectComplete()
+			.verify();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testExecuteFilterChain_invalidBeanSpecified() throws Throwable {
+		WorkRequest workRequest = new WorkRequest();
+		AnsweredWorkRequest validationViolationAnswer = new AnsweredWorkRequest();
+		ValidationFilterChain filterChain = Mockito.mock(ValidationFilterChain.class);
+		Filter filter1 = createMockFilter(null);
+		ValidationFilter validationFilter1 = Mockito.mock(ValidationFilter.class);
+		
+		ProceedingJoinPoint joinPoint = Mockito.mock(ProceedingJoinPoint.class);
+		Object[] joinPointArguments = new Object[] {workRequest};
+		
+		Mockito.when(joinPoint.getArgs())
+			.thenReturn(joinPointArguments);
+		Mockito.when(joinPoint.proceed(joinPointArguments))
+			.thenReturn(Mono.empty());
+		Mockito.when(filterChain.value())
+			.thenReturn(Arrays.array(filter1));
+		Mockito.when(beanFactory.getBean(ValidationFilter.class))
+			.thenThrow(new NoSuchBeanDefinitionException(ValidationFilter.class));
+		Mockito.when(validationFilter1.filter(workRequest))
+			.thenReturn(Mono.just(validationViolationAnswer));
+		
+		Mono<AnsweredWorkRequest> result = (Mono<AnsweredWorkRequest>) aspect.executeFilterChain(joinPoint, filterChain, workRequest);
+		
+		StepVerifier.create(result)
+			.expectError(NoSuchBeanDefinitionException.class)
 			.verify();
 	}
 	

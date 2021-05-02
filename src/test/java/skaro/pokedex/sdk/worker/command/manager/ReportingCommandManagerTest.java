@@ -1,4 +1,4 @@
-package skaro.pokedex.sdk.worker.command;
+package skaro.pokedex.sdk.worker.command.manager;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -17,7 +17,7 @@ import reactor.test.StepVerifier;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequestReport;
-import skaro.pokedex.sdk.worker.command.manager.ReportingCommandManager;
+import skaro.pokedex.sdk.worker.command.Command;
 import skaro.pokedex.sdk.worker.command.registration.CommandRegistrar;
 
 @ExtendWith(SpringExtension.class)

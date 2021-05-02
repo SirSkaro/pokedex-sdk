@@ -1,4 +1,4 @@
-package skaro.pokedex.sdk.worker.command;
+package skaro.pokedex.sdk.worker.command.registration;
 
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -15,8 +15,10 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import skaro.pokedex.sdk.worker.command.registration.BeanCommandRegistrar;
-import skaro.pokedex.sdk.worker.command.registration.CommandRegistration;
+import skaro.pokedex.sdk.worker.command.Command;
+import skaro.pokedex.sdk.worker.command.DefaultWorkerCommandConfiguration;
+import skaro.pokedex.sdk.worker.command.WorkerCommandConfigurationException;
+import skaro.pokedex.sdk.worker.command.WorkerCommandConfigurationProperties;
 
 @ExtendWith(SpringExtension.class)
 public class BeanCommandRegistrarTest {

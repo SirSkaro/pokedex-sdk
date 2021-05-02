@@ -8,6 +8,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -29,13 +30,13 @@ public class ArgumentValidationChainAspectConfiguration {
 	}
 
 	@Around("classAnnotatedWithValidationFilterChain(filterChain) && methodHasWorkRequestArgument(workRequest)")
-	public Object executeFilterChain(ProceedingJoinPoint joinPoint, ValidationFilterChain filterChain, WorkRequest workRequest) throws Throwable {
-		Mono<AnsweredWorkRequest> validationChain = Stream.of(filterChain.value())
-				.map(this::getFilterBean)
-				.map(filter -> Mono.defer(() -> filter.filter(workRequest)))
-				.reduce(Mono.empty(), (partialChain, nextFilter) -> partialChain.switchIfEmpty(nextFilter));
-		
-		return validationChain.switchIfEmpty(proceedWithCommand(joinPoint));
+	public Object executeFilterChain(ProceedingJoinPoint joinPoint, ValidationFilterChain filterChain, WorkRequest workRequest) {
+		try {
+			return constructChain(filterChain, workRequest)
+					.switchIfEmpty(proceedWithCommand(joinPoint));
+		} catch(BeansException e) {
+			return Mono.error(e);
+		}
 	}
 	
 	@Pointcut("@within(filterChain)")
@@ -43,6 +44,13 @@ public class ArgumentValidationChainAspectConfiguration {
 	
 	@Pointcut("args(workRequest,..)")
 	private void methodHasWorkRequestArgument(WorkRequest workRequest) {}
+
+	private Mono<AnsweredWorkRequest> constructChain(ValidationFilterChain filterChain, WorkRequest workRequest) {
+		return Stream.of(filterChain.value())
+				.map(this::getFilterBean)
+				.map(filter -> Mono.defer(() -> filter.filter(workRequest)))
+				.reduce(Mono.empty(), (partialChain, nextFilter) -> partialChain.switchIfEmpty(nextFilter));
+	}
 	
 	private ValidationFilter getFilterBean(Filter filter) {
 		Class<? extends ValidationFilter> filterCls = filter.value();
@@ -54,12 +62,12 @@ public class ArgumentValidationChainAspectConfiguration {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private Mono<AnsweredWorkRequest> proceedWithCommand(ProceedingJoinPoint joinPoint) throws Throwable {
+	private Mono<AnsweredWorkRequest> proceedWithCommand(ProceedingJoinPoint joinPoint) {
 		return Mono.defer( () -> {
 			try {
 				return (Mono<AnsweredWorkRequest>) joinPoint.proceed(joinPoint.getArgs());
 			} catch (Throwable e) {
-				throw new RuntimeException(e);
+				return Mono.error(e);
 			}
 		});
 	}
