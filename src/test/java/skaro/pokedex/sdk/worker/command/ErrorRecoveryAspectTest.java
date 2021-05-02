@@ -101,8 +101,6 @@ public class ErrorRecoveryAspectTest {
 			.verify();
 	}
 	
-	
-	
 	private DiscordEmbedLocaleSpec setupLocaleSpec() throws URISyntaxException {
 		DiscordEmbedLocaleSpec spec = new DiscordEmbedLocaleSpec();
 		spec.setColor(1);
@@ -121,6 +119,5 @@ public class ErrorRecoveryAspectTest {
 		
 		return spec;
 	}
-	
 	
 }
