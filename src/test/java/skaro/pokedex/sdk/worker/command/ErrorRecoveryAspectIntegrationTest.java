@@ -1,18 +1,17 @@
 package skaro.pokedex.sdk.worker.command;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,12 +22,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import discord4j.rest.http.client.ClientResponse;
-import discord4j.rest.request.DiscordWebResponse;
-import discord4j.rest.request.Router;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import skaro.pokedex.sdk.TestApplication;
 import skaro.pokedex.sdk.client.Language;
+import skaro.pokedex.sdk.discord.DiscordRouterFacade;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
@@ -56,19 +54,15 @@ public class ErrorRecoveryAspectIntegrationTest {
 	@Autowired
 	private AuthorModifierCommand command;
 	@Autowired
-	private Router router;
+	private DiscordRouterFacade router;
 	private WorkRequest request;
 	
 	@BeforeEach
 	public void setup() {
 		request = new WorkRequest();
-		request.setChannelId(UUID.randomUUID().toString());
 		request.setLanguage(Language.ENGLISH);
 		
-		DiscordWebResponse discordResponse = Mockito.mock(DiscordWebResponse.class);
-		Mockito.when(router.exchange(ArgumentMatchers.any()))
-			.thenReturn(discordResponse);
-		Mockito.when(discordResponse.mono())
+		Mockito.when(router.createMessage(any(), any()))
 			.thenReturn(Mono.just(Mockito.mock(ClientResponse.class)));
 	}
 	
@@ -112,7 +106,7 @@ public class ErrorRecoveryAspectIntegrationTest {
 	static class ErrorRecoveryAspectTestConfiguration {
 		
 		@MockBean
-		Router router;
+		DiscordRouterFacade router;
 		
 		@Bean(DefaultWorkerCommandConfiguration.ERROR_LOCALE_SPEC_BEAN)
 		DiscordEmbedLocaleSpec localeSpec() throws URISyntaxException {

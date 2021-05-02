@@ -19,11 +19,10 @@ import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import discord4j.rest.http.client.ClientResponse;
-import discord4j.rest.request.DiscordWebResponse;
-import discord4j.rest.request.Router;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import skaro.pokedex.sdk.client.Language;
+import skaro.pokedex.sdk.discord.DiscordRouterFacade;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
@@ -35,7 +34,7 @@ import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedSpec;
 public class ErrorRecoveryAspectTest {
 
 	@Mock
-	private Router router;
+	private DiscordRouterFacade router;
 	
 	private ErrorRecoveryAspectConfiguration aspect;
 	
@@ -51,7 +50,6 @@ public class ErrorRecoveryAspectTest {
 		WorkRequest workRequest = new WorkRequest();
 		workRequest.setChannelId(UUID.randomUUID().toString());
 		workRequest.setLanguage(Language.ENGLISH);
-		DiscordWebResponse discordResponse = Mockito.mock(DiscordWebResponse.class);
 		
 		ProceedingJoinPoint joinPoint = Mockito.mock(ProceedingJoinPoint.class);
 		Object[] joinPointArguments = new Object[] {workRequest};
@@ -60,9 +58,7 @@ public class ErrorRecoveryAspectTest {
 			.thenReturn(joinPointArguments);
 		Mockito.when(joinPoint.proceed(joinPointArguments))
 			.thenReturn(Mono.error(new Throwable("reason")));
-		Mockito.when(router.exchange(ArgumentMatchers.any()))
-			.thenReturn(discordResponse);
-		Mockito.when(discordResponse.mono())
+		Mockito.when(router.createMessage(ArgumentMatchers.any(), ArgumentMatchers.eq(workRequest.getChannelId())))
 			.thenReturn(Mono.just(Mockito.mock(ClientResponse.class)));
 		
 		Mono<AnsweredWorkRequest> result = (Mono<AnsweredWorkRequest>) aspect.handleCommandErrorAdvice(joinPoint, workRequest);
@@ -81,8 +77,6 @@ public class ErrorRecoveryAspectTest {
 	@SuppressWarnings("unchecked")
 	public void testHandleCommandErrorAdvice_joinPointDoesNotThrowError() throws Throwable {
 		WorkRequest workRequest = new WorkRequest();
-		workRequest.setChannelId(UUID.randomUUID().toString());
-		workRequest.setLanguage(Language.ENGLISH);
 		AnsweredWorkRequest answer = new AnsweredWorkRequest();
 		
 		ProceedingJoinPoint joinPoint = Mockito.mock(ProceedingJoinPoint.class);

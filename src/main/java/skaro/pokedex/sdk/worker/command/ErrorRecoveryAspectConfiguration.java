@@ -15,9 +15,8 @@ import discord4j.discordjson.json.EmbedData;
 import discord4j.discordjson.json.EmbedFieldData;
 import discord4j.discordjson.json.EmbedThumbnailData;
 import discord4j.discordjson.json.MessageCreateRequest;
-import discord4j.rest.request.Router;
-import discord4j.rest.route.Routes;
 import reactor.core.publisher.Mono;
+import skaro.pokedex.sdk.discord.DiscordRouterFacade;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
@@ -28,10 +27,10 @@ import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedSpec;
 @Configuration
 @Order(ERROR_RECOVERY_ASPECT_ORDER)
 public class ErrorRecoveryAspectConfiguration {
-	private Router router;
+	private DiscordRouterFacade router;
 	private DiscordEmbedLocaleSpec localeSpec;
 
-	public ErrorRecoveryAspectConfiguration(Router router, @Qualifier(ERROR_LOCALE_SPEC_BEAN) DiscordEmbedLocaleSpec localeSpec) {
+	public ErrorRecoveryAspectConfiguration(DiscordRouterFacade router, @Qualifier(ERROR_LOCALE_SPEC_BEAN) DiscordEmbedLocaleSpec localeSpec) {
 		this.router = router;
 		this.localeSpec = localeSpec;
 	}
@@ -66,11 +65,8 @@ public class ErrorRecoveryAspectConfiguration {
 		answer.setStatus(WorkStatus.ERROR);
 		answer.setWorkRequest(workRequest);
 		
-		return Routes.MESSAGE_CREATE.newRequest(workRequest.getChannelId())
-			.body(createErrorResponse(workRequest, error))
-			.exchange(router)
-			.mono()
-			.thenReturn(answer);
+		return router.createMessage(createErrorResponse(workRequest, error), workRequest.getChannelId())
+				.thenReturn(answer);
 	}
 	
 	private MessageCreateRequest createErrorResponse(WorkRequest workRequest, Throwable error) {
