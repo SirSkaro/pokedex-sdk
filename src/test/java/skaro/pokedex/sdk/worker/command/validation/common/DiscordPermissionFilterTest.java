@@ -4,10 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -17,6 +15,7 @@ import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import discord4j.discordjson.json.MemberData;
+import discord4j.discordjson.json.MessageCreateRequest;
 import discord4j.discordjson.json.RoleData;
 import discord4j.rest.http.client.ClientResponse;
 import discord4j.rest.util.Permission;
@@ -27,14 +26,15 @@ import skaro.pokedex.sdk.client.Language;
 import skaro.pokedex.sdk.discord.DiscordRouterFacade;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
-import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedLocaleSpec;
-import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedSpec;
+import skaro.pokedex.sdk.worker.command.MessageCreateRequestBuilder;
 
 @ExtendWith(SpringExtension.class)
 public class DiscordPermissionFilterTest {
 
 	@Mock
 	private DiscordRouterFacade router;
+	@Mock
+	private MessageCreateRequestBuilder<DiscordPermissionMessageContent> requestBuilder;
 	
 	private DiscordPermissionFilter filter;
 	
@@ -67,10 +67,11 @@ public class DiscordPermissionFilterTest {
 			.thenReturn(Mono.just(member));
 		Mockito.when(router.getGuildRoles(workRequest.getGuildId()))
 			.thenReturn(Mono.just(List.of(memberRole1, memberRole2, role3)));
+		Mockito.when(requestBuilder.populateFrom(any(DiscordPermissionMessageContent.class)))
+			.thenReturn(Mockito.mock(MessageCreateRequest.class));
 		
 		PermissionSet requiredPermissions = PermissionSet.of(requiredPermission1, requiredPermission2);
-		DiscordEmbedLocaleSpec localeSpec = new DiscordEmbedLocaleSpec();
-		filter = new DiscordPermissionFilter(requiredPermissions, router, localeSpec);
+		filter = new DiscordPermissionFilter(requiredPermissions, router, requestBuilder);
 		
 		StepVerifier.create(filter.filter(workRequest))
 			.expectComplete()
@@ -97,10 +98,11 @@ public class DiscordPermissionFilterTest {
 			.thenReturn(Mono.just(List.of(memberRole)));
 		Mockito.when(router.createMessage(any(), eq(workRequest.getChannelId())))
 			.thenReturn(Mono.just(Mockito.mock(ClientResponse.class)));
+		Mockito.when(requestBuilder.populateFrom(any(DiscordPermissionMessageContent.class)))
+			.thenReturn(Mockito.mock(MessageCreateRequest.class));
 		
 		PermissionSet requiredPermissions = PermissionSet.of(Permission.DEAFEN_MEMBERS);
-		DiscordEmbedLocaleSpec localeSpec = createLocaleSpec();
-		filter = new DiscordPermissionFilter(requiredPermissions, router, localeSpec);
+		filter = new DiscordPermissionFilter(requiredPermissions, router, requestBuilder);
 		
 		StepVerifier.create(filter.filter(workRequest))
 			.assertNext(answer -> assertEquals(WorkStatus.BAD_REQUEST, answer.getStatus()))
@@ -116,18 +118,6 @@ public class DiscordPermissionFilterTest {
 		workRequest.setLanguage(Language.ENGLISH);
 		
 		return workRequest;
-	}
-	
-	private DiscordEmbedLocaleSpec createLocaleSpec() throws URISyntaxException {
-		DiscordEmbedLocaleSpec spec = new DiscordEmbedLocaleSpec();
-		spec.setColor(1);
-		spec.setThumbnail(new URI("http://localhost"));
-		
-		DiscordEmbedSpec embedSpec = new DiscordEmbedSpec();
-		embedSpec.setTitle("title");
-		
-		spec.setEmbedSpecs(Map.of(Language.ENGLISH, embedSpec));
-		return spec;
 	}
 	
 }

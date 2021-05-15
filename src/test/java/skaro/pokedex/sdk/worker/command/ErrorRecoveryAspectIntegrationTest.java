@@ -2,6 +2,7 @@ package skaro.pokedex.sdk.worker.command;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static skaro.pokedex.sdk.worker.command.specification.CommonLocaleSpecConfiguration.ERROR_LOCALE_SPEC_BEAN;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -31,6 +32,7 @@ import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
 import skaro.pokedex.sdk.worker.command.ErrorRecoveryAspectIntegrationTest.ErrorRecoveryAspectTestConfiguration;
+import skaro.pokedex.sdk.worker.command.error.ErrorRecoveryAspectConfiguration;
 import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedField;
 import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedLocaleSpec;
 import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedSpec;
@@ -108,7 +110,7 @@ public class ErrorRecoveryAspectIntegrationTest {
 		@MockBean
 		DiscordRouterFacade router;
 		
-		@Bean(DefaultWorkerCommandConfiguration.ERROR_LOCALE_SPEC_BEAN)
+		@Bean(ERROR_LOCALE_SPEC_BEAN)
 		DiscordEmbedLocaleSpec localeSpec() throws URISyntaxException {
 			DiscordEmbedLocaleSpec spec = new DiscordEmbedLocaleSpec();
 			spec.setColor(1);

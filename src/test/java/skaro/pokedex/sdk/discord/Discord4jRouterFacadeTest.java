@@ -85,7 +85,6 @@ public class Discord4jRouterFacadeTest {
 			.assertNext(roles -> roles.containsAll(List.of(role1, role2)))
 			.expectComplete()
 			.verify();
-		
 	}
 	
 }

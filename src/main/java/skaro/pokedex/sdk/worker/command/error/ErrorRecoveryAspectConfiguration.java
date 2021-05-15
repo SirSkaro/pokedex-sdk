@@ -1,7 +1,7 @@
-package skaro.pokedex.sdk.worker.command;
+package skaro.pokedex.sdk.worker.command.error;
 
-import static skaro.pokedex.sdk.worker.command.DefaultWorkerCommandConfiguration.ERROR_LOCALE_SPEC_BEAN;
 import static skaro.pokedex.sdk.worker.command.DefaultWorkerCommandConfiguration.ERROR_RECOVERY_ASPECT_ORDER;
+import static skaro.pokedex.sdk.worker.command.specification.CommonLocaleSpecConfiguration.ERROR_LOCALE_SPEC_BEAN;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

@@ -26,6 +26,7 @@ import skaro.pokedex.sdk.discord.DiscordRouterFacade;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
+import skaro.pokedex.sdk.worker.command.error.ErrorRecoveryAspectConfiguration;
 import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedField;
 import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedLocaleSpec;
 import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedSpec;

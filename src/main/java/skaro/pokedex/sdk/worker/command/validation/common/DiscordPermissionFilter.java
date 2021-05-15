@@ -1,13 +1,11 @@
 package skaro.pokedex.sdk.worker.command.validation.common;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import discord4j.discordjson.json.EmbedData;
-import discord4j.discordjson.json.EmbedThumbnailData;
 import discord4j.discordjson.json.MemberData;
 import discord4j.discordjson.json.MessageCreateRequest;
 import discord4j.discordjson.json.RoleData;
+import discord4j.rest.http.client.ClientResponse;
 import discord4j.rest.util.PermissionSet;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -15,19 +13,18 @@ import skaro.pokedex.sdk.discord.DiscordRouterFacade;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
-import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedLocaleSpec;
-import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedSpec;
+import skaro.pokedex.sdk.worker.command.MessageCreateRequestBuilder;
 import skaro.pokedex.sdk.worker.command.validation.ValidationFilter;
 
 public class DiscordPermissionFilter implements ValidationFilter {
 	private PermissionSet requiredPermissions;
 	private DiscordRouterFacade router;
-	private DiscordEmbedLocaleSpec localeSpec;
+	private MessageCreateRequestBuilder<DiscordPermissionMessageContent> requestBuilder;
 	
-	public DiscordPermissionFilter(PermissionSet requiredPermissions, DiscordRouterFacade router, DiscordEmbedLocaleSpec localeSpec) {
+	public DiscordPermissionFilter(PermissionSet requiredPermissions, DiscordRouterFacade router, MessageCreateRequestBuilder<DiscordPermissionMessageContent> requestBuilder) {
 		this.requiredPermissions = requiredPermissions;
 		this.router = router;
-		this.localeSpec = localeSpec;
+		this.requestBuilder = requestBuilder;
 	}
 	
 	@Override
@@ -60,37 +57,24 @@ public class DiscordPermissionFilter implements ValidationFilter {
 			return Mono.empty();
 		}
 		
-		return sendInvalidationMessage(request);
-	}
-	
-	private Mono<AnsweredWorkRequest> sendInvalidationMessage(WorkRequest request) {
 		AnsweredWorkRequest answer = new AnsweredWorkRequest();
 		answer.setStatus(WorkStatus.BAD_REQUEST);
 		answer.setWorkRequest(request);
 		
-		return router.createMessage(createWarningMessage(request), request.getChannelId())
+		return sendInvalidRequestResponse(request)
 				.thenReturn(answer);
 	}
 	
+	private Mono<ClientResponse> sendInvalidRequestResponse(WorkRequest request) {
+		return router.createMessage(createWarningMessage(request), request.getChannelId());
+	}
+	
 	private MessageCreateRequest createWarningMessage(WorkRequest request) {
-		DiscordEmbedSpec embedSpec = localeSpec.getEmbedSpecs().get(request.getLanguage());
+		DiscordPermissionMessageContent messageContent = new DiscordPermissionMessageContent();
+		messageContent.setRequiredPermissions(requiredPermissions);
+		messageContent.setWorkRequest(request);
 		
-		String bulletedRequiredPermissions = requiredPermissions.stream()
-				.map(permission -> String.format("%s %s", ":small_blue_diamond:", permission.name()))
-				.collect(Collectors.joining("\n"));
-				
-		EmbedData embed = EmbedData.builder()
-				.color(localeSpec.getColor())
-				.title(embedSpec.getTitle())
-				.description(String.format("You need to following permissions to use the **%s** command:\n%s", request.getCommmand(), bulletedRequiredPermissions))
-				.thumbnail(EmbedThumbnailData.builder()
-						.url(localeSpec.getThumbnail().toString())
-						.build())
-				.build();
-		
-		return MessageCreateRequest.builder()
-				.embed(embed)
-				.build();
+		return requestBuilder.populateFrom(messageContent);
 	}
 
 }
