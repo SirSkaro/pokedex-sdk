@@ -1,8 +1,8 @@
-package skaro.pokedex.sdk.worker.command;
+package skaro.pokedex.sdk.discord;
 
 import discord4j.discordjson.json.MessageCreateRequest;
 
-public interface MessageCreateRequestBuilder<T extends MessageContent> {
+public interface MessageBuilder<T extends MessageContent> {
 
 	MessageCreateRequest populateFrom(T messageContent);
 	

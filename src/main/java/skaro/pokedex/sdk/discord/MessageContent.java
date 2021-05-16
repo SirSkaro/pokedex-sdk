@@ -1,4 +1,4 @@
-package skaro.pokedex.sdk.worker.command;
+package skaro.pokedex.sdk.discord;
 
 import skaro.pokedex.sdk.client.Language;
 

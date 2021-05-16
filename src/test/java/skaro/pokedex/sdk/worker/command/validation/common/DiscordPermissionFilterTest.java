@@ -15,7 +15,6 @@ import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import discord4j.discordjson.json.MemberData;
-import discord4j.discordjson.json.MessageCreateRequest;
 import discord4j.discordjson.json.RoleData;
 import discord4j.rest.http.client.ClientResponse;
 import discord4j.rest.util.Permission;
@@ -23,10 +22,10 @@ import discord4j.rest.util.PermissionSet;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import skaro.pokedex.sdk.client.Language;
+import skaro.pokedex.sdk.discord.DiscordMessageDirector;
 import skaro.pokedex.sdk.discord.DiscordRouterFacade;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
-import skaro.pokedex.sdk.worker.command.MessageCreateRequestBuilder;
 
 @ExtendWith(SpringExtension.class)
 public class DiscordPermissionFilterTest {
@@ -34,7 +33,7 @@ public class DiscordPermissionFilterTest {
 	@Mock
 	private DiscordRouterFacade router;
 	@Mock
-	private MessageCreateRequestBuilder<DiscordPermissionMessageContent> requestBuilder;
+	private DiscordMessageDirector<InvalidDiscordPermissionsMessageContent> messageDirector;
 	
 	private DiscordPermissionFilter filter;
 	
@@ -67,11 +66,9 @@ public class DiscordPermissionFilterTest {
 			.thenReturn(Mono.just(member));
 		Mockito.when(router.getGuildRoles(workRequest.getGuildId()))
 			.thenReturn(Mono.just(List.of(memberRole1, memberRole2, role3)));
-		Mockito.when(requestBuilder.populateFrom(any(DiscordPermissionMessageContent.class)))
-			.thenReturn(Mockito.mock(MessageCreateRequest.class));
 		
 		PermissionSet requiredPermissions = PermissionSet.of(requiredPermission1, requiredPermission2);
-		filter = new DiscordPermissionFilter(requiredPermissions, router, requestBuilder);
+		filter = new DiscordPermissionFilter(requiredPermissions, router, messageDirector);
 		
 		StepVerifier.create(filter.filter(workRequest))
 			.expectComplete()
@@ -81,6 +78,7 @@ public class DiscordPermissionFilterTest {
 	@Test
 	public void filterTest_userDoesNotHavePermissions() throws URISyntaxException {
 		WorkRequest workRequest = createWorkRequest();
+		workRequest.setChannelId("channel id");
 		MemberData member = Mockito.mock(MemberData.class);
 		String roleId = UUID.randomUUID().toString();
 		RoleData memberRole = Mockito.mock(RoleData.class);
@@ -96,13 +94,11 @@ public class DiscordPermissionFilterTest {
 			.thenReturn(Mono.just(member));
 		Mockito.when(router.getGuildRoles(workRequest.getGuildId()))
 			.thenReturn(Mono.just(List.of(memberRole)));
-		Mockito.when(router.createMessage(any(), eq(workRequest.getChannelId())))
+		Mockito.when(messageDirector.createDiscordMessage(any(InvalidDiscordPermissionsMessageContent.class), eq(workRequest.getChannelId())))
 			.thenReturn(Mono.just(Mockito.mock(ClientResponse.class)));
-		Mockito.when(requestBuilder.populateFrom(any(DiscordPermissionMessageContent.class)))
-			.thenReturn(Mockito.mock(MessageCreateRequest.class));
 		
 		PermissionSet requiredPermissions = PermissionSet.of(Permission.DEAFEN_MEMBERS);
-		filter = new DiscordPermissionFilter(requiredPermissions, router, requestBuilder);
+		filter = new DiscordPermissionFilter(requiredPermissions, router, messageDirector);
 		
 		StepVerifier.create(filter.filter(workRequest))
 			.assertNext(answer -> assertEquals(WorkStatus.BAD_REQUEST, answer.getStatus()))

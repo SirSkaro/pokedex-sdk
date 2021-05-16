@@ -1,30 +1,30 @@
 package skaro.pokedex.sdk.worker.command.validation.common;
 
-import discord4j.rest.util.PermissionSet;
 import skaro.pokedex.sdk.client.Language;
+import skaro.pokedex.sdk.discord.MessageContent;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
-import skaro.pokedex.sdk.worker.command.MessageContent;
 
-public class DiscordPermissionMessageContent implements MessageContent {
+public class InvalidArgumentCountMessageContent implements MessageContent {
 
-	private PermissionSet requiredPermissions;
 	private WorkRequest workRequest;
+	private int expectedArgumentCount;
 	
-	public PermissionSet getRequiredPermissions() {
-		return requiredPermissions;
-	}
-	public void setRequiredPermissions(PermissionSet requiredPermissions) {
-		this.requiredPermissions = requiredPermissions;
-	}
 	public WorkRequest getWorkRequest() {
 		return workRequest;
 	}
 	public void setWorkRequest(WorkRequest workRequest) {
 		this.workRequest = workRequest;
 	}
+	public int getExpectedArgumentCount() {
+		return expectedArgumentCount;
+	}
+	public void setExpectedArgumentCount(int expectedArgumentCount) {
+		this.expectedArgumentCount = expectedArgumentCount;
+	}
+
 	@Override
 	public Language getLanguage() {
 		return workRequest.getLanguage();
 	}
-	
+
 }

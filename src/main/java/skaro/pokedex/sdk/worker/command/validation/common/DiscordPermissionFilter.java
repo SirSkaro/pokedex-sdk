@@ -3,28 +3,27 @@ package skaro.pokedex.sdk.worker.command.validation.common;
 import java.util.List;
 
 import discord4j.discordjson.json.MemberData;
-import discord4j.discordjson.json.MessageCreateRequest;
 import discord4j.discordjson.json.RoleData;
 import discord4j.rest.http.client.ClientResponse;
 import discord4j.rest.util.PermissionSet;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
+import skaro.pokedex.sdk.discord.DiscordMessageDirector;
 import skaro.pokedex.sdk.discord.DiscordRouterFacade;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
-import skaro.pokedex.sdk.worker.command.MessageCreateRequestBuilder;
 import skaro.pokedex.sdk.worker.command.validation.ValidationFilter;
 
 public class DiscordPermissionFilter implements ValidationFilter {
 	private PermissionSet requiredPermissions;
 	private DiscordRouterFacade router;
-	private MessageCreateRequestBuilder<DiscordPermissionMessageContent> requestBuilder;
+	private DiscordMessageDirector<InvalidDiscordPermissionsMessageContent> messageDirector;
 	
-	public DiscordPermissionFilter(PermissionSet requiredPermissions, DiscordRouterFacade router, MessageCreateRequestBuilder<DiscordPermissionMessageContent> requestBuilder) {
+	public DiscordPermissionFilter(PermissionSet requiredPermissions, DiscordRouterFacade router, DiscordMessageDirector<InvalidDiscordPermissionsMessageContent> messageDirector) {
 		this.requiredPermissions = requiredPermissions;
 		this.router = router;
-		this.requestBuilder = requestBuilder;
+		this.messageDirector = messageDirector;
 	}
 	
 	@Override
@@ -57,24 +56,24 @@ public class DiscordPermissionFilter implements ValidationFilter {
 			return Mono.empty();
 		}
 		
+		return sendInvalidRequestResponse(request)
+				.thenReturn(createAnswer(request));
+	}
+	
+	private Mono<ClientResponse> sendInvalidRequestResponse(WorkRequest request) {
+		InvalidDiscordPermissionsMessageContent messageContent = new InvalidDiscordPermissionsMessageContent();
+		messageContent.setRequiredPermissions(requiredPermissions);
+		messageContent.setWorkRequest(request);
+		
+		return messageDirector.createDiscordMessage(messageContent, request.getChannelId());
+	}
+	
+	private AnsweredWorkRequest createAnswer(WorkRequest request) {
 		AnsweredWorkRequest answer = new AnsweredWorkRequest();
 		answer.setStatus(WorkStatus.BAD_REQUEST);
 		answer.setWorkRequest(request);
 		
-		return sendInvalidRequestResponse(request)
-				.thenReturn(answer);
+		return answer;
 	}
 	
-	private Mono<ClientResponse> sendInvalidRequestResponse(WorkRequest request) {
-		return router.createMessage(createWarningMessage(request), request.getChannelId());
-	}
-	
-	private MessageCreateRequest createWarningMessage(WorkRequest request) {
-		DiscordPermissionMessageContent messageContent = new DiscordPermissionMessageContent();
-		messageContent.setRequiredPermissions(requiredPermissions);
-		messageContent.setWorkRequest(request);
-		
-		return requestBuilder.populateFrom(messageContent);
-	}
-
 }

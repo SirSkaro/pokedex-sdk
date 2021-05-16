@@ -5,20 +5,20 @@ import java.util.stream.Collectors;
 import discord4j.discordjson.json.EmbedData;
 import discord4j.discordjson.json.EmbedThumbnailData;
 import discord4j.discordjson.json.MessageCreateRequest;
-import skaro.pokedex.sdk.worker.command.MessageCreateRequestBuilder;
+import skaro.pokedex.sdk.discord.MessageBuilder;
 import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedLocaleSpec;
 import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedSpec;
 
-public class InvalidDiscordPermissionMessageBuilder implements MessageCreateRequestBuilder<DiscordPermissionMessageContent> {
+public class InvalidDiscordPermissionsMessageBuilder implements MessageBuilder<InvalidDiscordPermissionsMessageContent> {
 
 	private DiscordEmbedLocaleSpec localeSpec;
 	
-	public InvalidDiscordPermissionMessageBuilder(DiscordEmbedLocaleSpec localeSpec) {
+	public InvalidDiscordPermissionsMessageBuilder(DiscordEmbedLocaleSpec localeSpec) {
 		this.localeSpec = localeSpec;
 	}
 
 	@Override
-	public MessageCreateRequest populateFrom(DiscordPermissionMessageContent messageContent) {
+	public MessageCreateRequest populateFrom(InvalidDiscordPermissionsMessageContent messageContent) {
 		DiscordEmbedSpec embedSpec = localeSpec.getEmbedSpecs().get(messageContent.getLanguage());
 				
 		EmbedData embed = EmbedData.builder()
@@ -35,7 +35,7 @@ public class InvalidDiscordPermissionMessageBuilder implements MessageCreateRequ
 				.build();
 	}
 	
-	private String formatDescription(DiscordPermissionMessageContent messageContent, DiscordEmbedSpec embedSpec) {
+	private String formatDescription(InvalidDiscordPermissionsMessageContent messageContent, DiscordEmbedSpec embedSpec) {
 		String bulletedRequiredPermissions = messageContent.getRequiredPermissions().stream()
 				.map(permission -> String.format("%s %s", ":small_blue_diamond:", permission.name()))
 				.collect(Collectors.joining("\n"));
