@@ -39,8 +39,9 @@ public class InvalidDiscordPermissionsMessageBuilder implements MessageBuilder<I
 		String bulletedRequiredPermissions = messageContent.getRequiredPermissions().stream()
 				.map(permission -> String.format("%s %s", ":small_blue_diamond:", permission.name()))
 				.collect(Collectors.joining("\n"));
+		String description = String.format(embedSpec.getDescription(), messageContent.getWorkRequest().getCommmand());
 		
-		return String.format("%s:\n%s", embedSpec.getDescription(), messageContent.getWorkRequest().getCommmand(), bulletedRequiredPermissions);
+		return String.format("%s:\n%s", description, bulletedRequiredPermissions);
 	}
 
 }

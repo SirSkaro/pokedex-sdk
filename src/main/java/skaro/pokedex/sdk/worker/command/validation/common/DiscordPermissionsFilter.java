@@ -15,12 +15,12 @@ import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
 import skaro.pokedex.sdk.worker.command.validation.ValidationFilter;
 
-public class DiscordPermissionFilter implements ValidationFilter {
+public class DiscordPermissionsFilter implements ValidationFilter {
 	private PermissionSet requiredPermissions;
 	private DiscordRouterFacade router;
 	private DiscordMessageDirector<InvalidDiscordPermissionsMessageContent> messageDirector;
 	
-	public DiscordPermissionFilter(PermissionSet requiredPermissions, DiscordRouterFacade router, DiscordMessageDirector<InvalidDiscordPermissionsMessageContent> messageDirector) {
+	public DiscordPermissionsFilter(PermissionSet requiredPermissions, DiscordRouterFacade router, DiscordMessageDirector<InvalidDiscordPermissionsMessageContent> messageDirector) {
 		this.requiredPermissions = requiredPermissions;
 		this.router = router;
 		this.messageDirector = messageDirector;

@@ -35,7 +35,7 @@ public class DiscordPermissionFilterTest {
 	@Mock
 	private DiscordMessageDirector<InvalidDiscordPermissionsMessageContent> messageDirector;
 	
-	private DiscordPermissionFilter filter;
+	private DiscordPermissionsFilter filter;
 	
 	@Test
 	public void filterTest_userHasPermissions() {
@@ -68,7 +68,7 @@ public class DiscordPermissionFilterTest {
 			.thenReturn(Mono.just(List.of(memberRole1, memberRole2, role3)));
 		
 		PermissionSet requiredPermissions = PermissionSet.of(requiredPermission1, requiredPermission2);
-		filter = new DiscordPermissionFilter(requiredPermissions, router, messageDirector);
+		filter = new DiscordPermissionsFilter(requiredPermissions, router, messageDirector);
 		
 		StepVerifier.create(filter.filter(workRequest))
 			.expectComplete()
@@ -98,7 +98,7 @@ public class DiscordPermissionFilterTest {
 			.thenReturn(Mono.just(Mockito.mock(ClientResponse.class)));
 		
 		PermissionSet requiredPermissions = PermissionSet.of(Permission.DEAFEN_MEMBERS);
-		filter = new DiscordPermissionFilter(requiredPermissions, router, messageDirector);
+		filter = new DiscordPermissionsFilter(requiredPermissions, router, messageDirector);
 		
 		StepVerifier.create(filter.filter(workRequest))
 			.assertNext(answer -> assertEquals(WorkStatus.BAD_REQUEST, answer.getStatus()))

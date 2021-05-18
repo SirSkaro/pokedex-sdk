@@ -1,13 +1,15 @@
 package skaro.pokedex.sdk.worker.command.validation.common;
 
+import javax.validation.constraints.NotNull;
+
 import skaro.pokedex.sdk.client.Language;
 import skaro.pokedex.sdk.discord.MessageContent;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 
-public class InvalidArgumentCountMessageContent implements MessageContent {
+public class ExpectedArgumentsMessageContent implements MessageContent {
 
+	@NotNull
 	private WorkRequest workRequest;
-	private int expectedArgumentCount;
 	
 	public WorkRequest getWorkRequest() {
 		return workRequest;
@@ -15,16 +17,9 @@ public class InvalidArgumentCountMessageContent implements MessageContent {
 	public void setWorkRequest(WorkRequest workRequest) {
 		this.workRequest = workRequest;
 	}
-	public int getExpectedArgumentCount() {
-		return expectedArgumentCount;
-	}
-	public void setExpectedArgumentCount(int expectedArgumentCount) {
-		this.expectedArgumentCount = expectedArgumentCount;
-	}
-
 	@Override
 	public Language getLanguage() {
 		return workRequest.getLanguage();
 	}
-
+	
 }

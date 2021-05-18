@@ -10,9 +10,8 @@ public class CacheTopicMessagingConfiguration {
 	
 	public static final String TOPIC = "skaro.pokedex.cache";
 	public static final String DISCORD_GUILD_ROUTING_PATTERN_PREFIX = "discord.guild";
-	public static final String DISCORD_PREFIX_ROUTING_PATTERN_PREFIX = DISCORD_GUILD_ROUTING_PATTERN_PREFIX + ".prefix";
+	public static final String DISCORD_GUILD_SETTINGS_ROUTING_PATTERN_PREFIX = DISCORD_GUILD_ROUTING_PATTERN_PREFIX + ".settings";
 	public static final String DISCORD_RATE_LIMIT_ROUTING_PATTERN_PREFIX = DISCORD_GUILD_ROUTING_PATTERN_PREFIX + ".limit";
-	public static final String DISCORD_LANGUAGE_ROUTING_PATTERN_PREFIX = DISCORD_GUILD_ROUTING_PATTERN_PREFIX + ".language";
 	
 	@Bean(CACHE_TOPIC_EXCHANGE_BEAN)
 	public TopicExchange topicExchange() {

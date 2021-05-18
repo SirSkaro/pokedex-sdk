@@ -16,7 +16,7 @@ public class CommonLocaleSpecConfiguration {
 	private static final String WARNING_LOCALE_SPEC_PROPERTIES_PREFIX = "skaro.pokedex.sdk.discord.embed-locale.warning";
 	
 	public static final String DISOCRD_PERMISSION_LOCALE_SPEC_BEAN = "discordPermissionLocaleSpecBean";
-	private static final String DISOCRD_PERMISSION_LOCALE_SPEC_PROPERTIES_PREFIX = "skaro.pokedex.sdk.discord.embed-locale.discord-permissions";
+	private static final String DISOCRD_PERMISSION_LOCALE_SPEC_PROPERTIES_PREFIX = "skaro.pokedex.sdk.discord.embed-locale.filter.discord-permissions";
 
 	@Bean(ERROR_LOCALE_SPEC_BEAN)
 	@ConfigurationProperties(ERROR_LOCALE_SPEC_PROPERTIES_PREFIX)
