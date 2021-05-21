@@ -18,9 +18,9 @@ import skaro.pokedex.sdk.worker.command.validation.ValidationFilter;
 public class DiscordPermissionsFilter implements ValidationFilter {
 	private PermissionSet requiredPermissions;
 	private DiscordRouterFacade router;
-	private DiscordMessageDirector<InvalidDiscordPermissionsMessageContent> messageDirector;
+	private DiscordMessageDirector<DiscordPermissionsMessageContent> messageDirector;
 	
-	public DiscordPermissionsFilter(PermissionSet requiredPermissions, DiscordRouterFacade router, DiscordMessageDirector<InvalidDiscordPermissionsMessageContent> messageDirector) {
+	public DiscordPermissionsFilter(PermissionSet requiredPermissions, DiscordRouterFacade router, DiscordMessageDirector<DiscordPermissionsMessageContent> messageDirector) {
 		this.requiredPermissions = requiredPermissions;
 		this.router = router;
 		this.messageDirector = messageDirector;
@@ -61,7 +61,7 @@ public class DiscordPermissionsFilter implements ValidationFilter {
 	}
 	
 	private Mono<ClientResponse> sendInvalidRequestResponse(WorkRequest request) {
-		InvalidDiscordPermissionsMessageContent messageContent = new InvalidDiscordPermissionsMessageContent();
+		DiscordPermissionsMessageContent messageContent = new DiscordPermissionsMessageContent();
 		messageContent.setRequiredPermissions(requiredPermissions);
 		messageContent.setWorkRequest(request);
 		

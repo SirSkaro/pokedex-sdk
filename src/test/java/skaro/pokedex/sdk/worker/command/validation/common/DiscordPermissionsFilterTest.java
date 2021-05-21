@@ -33,7 +33,7 @@ public class DiscordPermissionsFilterTest {
 	@Mock
 	private DiscordRouterFacade router;
 	@Mock
-	private DiscordMessageDirector<InvalidDiscordPermissionsMessageContent> messageDirector;
+	private DiscordMessageDirector<DiscordPermissionsMessageContent> messageDirector;
 	
 	private DiscordPermissionsFilter filter;
 	
@@ -94,7 +94,7 @@ public class DiscordPermissionsFilterTest {
 			.thenReturn(Mono.just(member));
 		Mockito.when(router.getGuildRoles(workRequest.getGuildId()))
 			.thenReturn(Mono.just(List.of(memberRole)));
-		Mockito.when(messageDirector.createDiscordMessage(any(InvalidDiscordPermissionsMessageContent.class), eq(workRequest.getChannelId())))
+		Mockito.when(messageDirector.createDiscordMessage(any(DiscordPermissionsMessageContent.class), eq(workRequest.getChannelId())))
 			.thenReturn(Mono.just(Mockito.mock(ClientResponse.class)));
 		
 		PermissionSet requiredPermissions = PermissionSet.of(Permission.DEAFEN_MEMBERS);

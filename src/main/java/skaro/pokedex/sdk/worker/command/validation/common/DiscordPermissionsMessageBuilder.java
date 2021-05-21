@@ -9,16 +9,16 @@ import skaro.pokedex.sdk.discord.MessageBuilder;
 import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedLocaleSpec;
 import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedSpec;
 
-public class InvalidDiscordPermissionsMessageBuilder implements MessageBuilder<InvalidDiscordPermissionsMessageContent> {
+public class DiscordPermissionsMessageBuilder implements MessageBuilder<DiscordPermissionsMessageContent> {
 
 	private DiscordEmbedLocaleSpec localeSpec;
 	
-	public InvalidDiscordPermissionsMessageBuilder(DiscordEmbedLocaleSpec localeSpec) {
+	public DiscordPermissionsMessageBuilder(DiscordEmbedLocaleSpec localeSpec) {
 		this.localeSpec = localeSpec;
 	}
 
 	@Override
-	public MessageCreateRequest populateFrom(InvalidDiscordPermissionsMessageContent messageContent) {
+	public MessageCreateRequest populateFrom(DiscordPermissionsMessageContent messageContent) {
 		DiscordEmbedSpec embedSpec = localeSpec.getEmbedSpecs().get(messageContent.getLanguage());
 				
 		EmbedData embed = EmbedData.builder()
@@ -35,7 +35,7 @@ public class InvalidDiscordPermissionsMessageBuilder implements MessageBuilder<I
 				.build();
 	}
 	
-	private String formatDescription(InvalidDiscordPermissionsMessageContent messageContent, DiscordEmbedSpec embedSpec) {
+	private String formatDescription(DiscordPermissionsMessageContent messageContent, DiscordEmbedSpec embedSpec) {
 		String bulletedRequiredPermissions = messageContent.getRequiredPermissions().stream()
 				.map(permission -> String.format("%s %s", ":small_blue_diamond:", permission.name()))
 				.collect(Collectors.joining("\n"));

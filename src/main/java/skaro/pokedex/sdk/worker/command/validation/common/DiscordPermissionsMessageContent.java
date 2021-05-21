@@ -5,7 +5,7 @@ import skaro.pokedex.sdk.client.Language;
 import skaro.pokedex.sdk.discord.MessageContent;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 
-public class InvalidDiscordPermissionsMessageContent implements MessageContent {
+public class DiscordPermissionsMessageContent implements MessageContent {
 
 	private PermissionSet requiredPermissions;
 	private WorkRequest workRequest;
