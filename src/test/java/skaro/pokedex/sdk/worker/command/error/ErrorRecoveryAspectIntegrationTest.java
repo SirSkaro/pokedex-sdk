@@ -1,4 +1,4 @@
-package skaro.pokedex.sdk.worker.command;
+package skaro.pokedex.sdk.worker.command.error;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,8 +31,8 @@ import skaro.pokedex.sdk.discord.DiscordRouterFacade;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
-import skaro.pokedex.sdk.worker.command.ErrorRecoveryAspectIntegrationTest.ErrorRecoveryAspectTestConfiguration;
-import skaro.pokedex.sdk.worker.command.error.ErrorRecoveryAspectConfiguration;
+import skaro.pokedex.sdk.worker.command.Command;
+import skaro.pokedex.sdk.worker.command.error.ErrorRecoveryAspectIntegrationTest.ErrorRecoveryAspectTestConfiguration;
 import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedField;
 import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedLocaleSpec;
 import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedSpec;

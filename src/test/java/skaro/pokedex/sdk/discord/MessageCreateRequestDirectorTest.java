@@ -30,7 +30,7 @@ public class MessageCreateRequestDirectorTest {
 	}
 	
 	@Test
-	private void testCreateDiscordMessage() {
+	public void testCreateDiscordMessage() {
 		MessageContent content = Mockito.mock(MessageContent.class);
 		String channelId = UUID.randomUUID().toString();
 		MessageCreateRequest messageCreateRequest = Mockito.mock(MessageCreateRequest.class);
