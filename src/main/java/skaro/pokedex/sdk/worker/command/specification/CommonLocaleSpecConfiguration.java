@@ -35,7 +35,7 @@ public class CommonLocaleSpecConfiguration {
 	@Bean(DISOCRD_PERMISSION_LOCALE_SPEC_BEAN)
 	@ConfigurationProperties(DISOCRD_PERMISSION_LOCALE_SPEC_PROPERTIES_PREFIX)
 	@Valid
-	public DiscordEmbedLocaleSpec warningMessageLocaleSpec(@Qualifier(WARNING_LOCALE_SPEC_BEAN) DiscordEmbedLocaleSpec warningLocaleSpec) {
+	public DiscordEmbedLocaleSpec invalidDiscordPermissionMessageLocaleSpec(@Qualifier(WARNING_LOCALE_SPEC_BEAN) DiscordEmbedLocaleSpec warningLocaleSpec) {
 		DiscordEmbedLocaleSpec result = new DiscordEmbedLocaleSpec();
 		result.setColor(warningLocaleSpec.getColor());
 		result.setThumbnail(warningLocaleSpec.getThumbnail());

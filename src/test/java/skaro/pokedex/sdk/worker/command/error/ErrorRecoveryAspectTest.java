@@ -2,10 +2,7 @@ package skaro.pokedex.sdk.worker.command.error;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -22,26 +19,21 @@ import discord4j.rest.http.client.ClientResponse;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import skaro.pokedex.sdk.client.Language;
-import skaro.pokedex.sdk.discord.DiscordRouterFacade;
+import skaro.pokedex.sdk.discord.DiscordMessageDirector;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
-import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedField;
-import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedLocaleSpec;
-import skaro.pokedex.sdk.worker.command.specification.DiscordEmbedSpec;
 
 @ExtendWith(SpringExtension.class)
 public class ErrorRecoveryAspectTest {
 
 	@Mock
-	private DiscordRouterFacade router;
-	
+	private DiscordMessageDirector<ErrorMessageContent> messageDirector;
 	private ErrorRecoveryAspectConfiguration aspect;
 	
 	@BeforeEach
 	public void setup() throws URISyntaxException {
-		DiscordEmbedLocaleSpec localeSpec = setupLocaleSpec();
-		aspect = new ErrorRecoveryAspectConfiguration(router, localeSpec);
+		aspect = new ErrorRecoveryAspectConfiguration(messageDirector);
 	}
 	
 	@Test
@@ -58,7 +50,7 @@ public class ErrorRecoveryAspectTest {
 			.thenReturn(joinPointArguments);
 		Mockito.when(joinPoint.proceed(joinPointArguments))
 			.thenReturn(Mono.error(new Throwable("reason")));
-		Mockito.when(router.createMessage(ArgumentMatchers.any(), ArgumentMatchers.eq(workRequest.getChannelId())))
+		Mockito.when(messageDirector.createDiscordMessage(ArgumentMatchers.any(), ArgumentMatchers.eq(workRequest.getChannelId())))
 			.thenReturn(Mono.just(Mockito.mock(ClientResponse.class)));
 		
 		Mono<AnsweredWorkRequest> result = (Mono<AnsweredWorkRequest>) aspect.handleCommandErrorAdvice(joinPoint, workRequest);
@@ -93,25 +85,6 @@ public class ErrorRecoveryAspectTest {
 			.expectNext(answer)
 			.expectComplete()
 			.verify();
-	}
-	
-	private DiscordEmbedLocaleSpec setupLocaleSpec() throws URISyntaxException {
-		DiscordEmbedLocaleSpec spec = new DiscordEmbedLocaleSpec();
-		spec.setColor(1);
-		spec.setThumbnail(new URI("http://localhost"));
-		
-		DiscordEmbedSpec embedSpec = new DiscordEmbedSpec();
-		embedSpec.setTitle("title");
-		embedSpec.setDescription("description");
-		DiscordEmbedField embedField = new DiscordEmbedField();
-		embedField.setName("Foo");
-		embedField.setValue("Bar");
-		embedSpec.setFields(List.of(embedField, embedField, embedField));
-		
-		Map<Language, DiscordEmbedSpec> embedSpecs = Map.of(Language.ENGLISH, embedSpec);
-		spec.setEmbedSpecs(embedSpecs);
-		
-		return spec;
 	}
 	
 }

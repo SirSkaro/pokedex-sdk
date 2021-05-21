@@ -114,7 +114,7 @@ public class ErrorRecoveryAspectIntegrationTest {
 		DiscordEmbedLocaleSpec localeSpec() throws URISyntaxException {
 			DiscordEmbedLocaleSpec spec = new DiscordEmbedLocaleSpec();
 			spec.setColor(1);
-			spec.setThumbnail(new URI("http://localhost"));
+			spec.setThumbnail(URI.create("http://localhost"));
 			
 			DiscordEmbedSpec embedSpec = new DiscordEmbedSpec();
 			embedSpec.setTitle("title");
