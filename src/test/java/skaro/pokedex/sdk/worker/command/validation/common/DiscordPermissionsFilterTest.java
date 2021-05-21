@@ -28,7 +28,7 @@ import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
 
 @ExtendWith(SpringExtension.class)
-public class DiscordPermissionFilterTest {
+public class DiscordPermissionsFilterTest {
 
 	@Mock
 	private DiscordRouterFacade router;

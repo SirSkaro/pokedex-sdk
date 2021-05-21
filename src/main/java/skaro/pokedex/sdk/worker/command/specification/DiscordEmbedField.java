@@ -25,6 +25,7 @@ public class DiscordEmbedField  {
 	
 	public EmbedFieldData toEmbedFieldData() {
 		return EmbedFieldData.builder()
+				.inline(true)
 				.name(name)
 				.value(value)
 				.build();
