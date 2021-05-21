@@ -2,6 +2,8 @@ package skaro.pokedex.sdk.worker.command.specification;
 
 import javax.validation.constraints.NotEmpty;
 
+import discord4j.discordjson.json.EmbedFieldData;
+
 public class DiscordEmbedField  {
 
 	@NotEmpty
@@ -19,6 +21,13 @@ public class DiscordEmbedField  {
 	}
 	public void setValue(String value) {
 		this.value = value;
+	}
+	
+	public EmbedFieldData toEmbedFieldData() {
+		return EmbedFieldData.builder()
+				.name(name)
+				.value(value)
+				.build();
 	}
 	
 }

@@ -45,15 +45,8 @@ public class ExpectedArgumentsMessageBuilder implements MessageBuilder<ExpectedA
 	
 	private List<EmbedFieldData> formatFields(DiscordEmbedSpec embedSpec) {
 		return embedSpec.getFields().stream()
-			.map(this::toEmbedData)
+			.map(DiscordEmbedField::toEmbedFieldData)
 			.collect(Collectors.toList());
-	}
-		
-	private EmbedFieldData toEmbedData(DiscordEmbedField field) {
-		return EmbedFieldData.builder()
-				.name(field.getName())
-				.value(field.getValue())
-				.build();
 	}
 
 }
