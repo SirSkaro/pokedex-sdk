@@ -4,6 +4,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -18,7 +19,7 @@ import skaro.pokedex.sdk.worker.command.manager.ReportingCommandManager;
 import skaro.pokedex.sdk.worker.command.registration.BeanCommandRegistrar;
 import skaro.pokedex.sdk.worker.command.registration.CommandRegistrar;
 import skaro.pokedex.sdk.worker.command.source.CommandSource;
-import skaro.pokedex.sdk.worker.command.source.CommandSourceRunner;
+import skaro.pokedex.sdk.worker.command.source.CommandMessageReceiverSource;
 import skaro.pokedex.sdk.worker.command.specification.CommonLocaleSpecConfiguration;
 import skaro.pokedex.sdk.worker.command.validation.ArgumentValidationChainAspectConfiguration;
 
@@ -53,7 +54,12 @@ public class DefaultWorkerCommandConfiguration {
 	
 	@Bean
 	public CommandSource commandSrouce(CommandManager manager, MessageReceiver<WorkRequest> receiver, Scheduler scheduler) {
-		return new CommandSourceRunner(manager, receiver, scheduler);
+		return new CommandMessageReceiverSource(manager, receiver, scheduler);
+	}
+	
+	@Bean
+	public CommandLineRunner commandSourceRunner(CommandSource commandSource) {
+		return (String[] args) -> commandSource.stream().subscribe();
 	}
 	
 }

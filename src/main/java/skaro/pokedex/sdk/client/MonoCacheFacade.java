@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.Cache.ValueWrapper;
 import org.springframework.cache.CacheManager;
 
 import reactor.core.publisher.Mono;
@@ -23,9 +22,7 @@ public class MonoCacheFacade implements CacheFacade {
 	public <T> Mono<T> get(Class<T> cls, String key) {
 		String cacheName = getCacheName(cls);
 		Optional<T> cachedData = Optional.ofNullable(cacheManager.getCache(cacheName))
-				.map(cache -> cache.get(key))
-				.map(ValueWrapper::get)
-				.map(cls::cast);
+				.map(cache -> cache.get(key, cls));
 		
 		return Mono.justOrEmpty(cachedData);
 	}

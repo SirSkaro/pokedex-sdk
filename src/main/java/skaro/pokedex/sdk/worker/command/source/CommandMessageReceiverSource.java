@@ -4,8 +4,8 @@ import java.lang.invoke.MethodHandles;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.CommandLineRunner;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import skaro.pokedex.sdk.messaging.MessageReceiver;
@@ -13,27 +13,25 @@ import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequestReport;
 import skaro.pokedex.sdk.worker.command.manager.CommandManager;
 
-public class CommandSourceRunner implements CommandSource, CommandLineRunner {
-
+public class CommandMessageReceiverSource implements CommandSource {
 	private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	
 	private CommandManager manager;
 	private MessageReceiver<WorkRequest> receiver;
 	private Scheduler scheduler;
 	
-	public CommandSourceRunner(CommandManager manager, MessageReceiver<WorkRequest> receiver, Scheduler scheduler) {
+	public CommandMessageReceiverSource(CommandManager manager, MessageReceiver<WorkRequest> receiver, Scheduler scheduler) {
 		this.manager = manager; 
 		this.receiver = receiver;
 		this.scheduler = scheduler;
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
+	public Flux<WorkRequestReport> stream() {
 		LOG.info("Listening for commands");
 		
-		receiver.streamMessages(scheduler)
-			.flatMap(this::forwardMessage)
-			.subscribe();
+		return receiver.streamMessages(scheduler)
+			.flatMap(this::forwardMessage);
 	}
 	
 	private Mono<WorkRequestReport> forwardMessage(WorkRequest workRequest) {
