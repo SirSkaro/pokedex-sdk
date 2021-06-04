@@ -1,6 +1,7 @@
 package skaro.pokedex.sdk.worker.command.error;
 
 import java.util.List;
+import java.util.Optional;
 
 import discord4j.discordjson.json.EmbedData;
 import discord4j.discordjson.json.EmbedFieldData;
@@ -48,7 +49,7 @@ public class ErrorMessageBuilder implements MessageBuilder<ErrorMessageContent> 
 		EmbedFieldData technicalErrorField = EmbedFieldData.builder()
 				.inline(true)
 				.name(embedSpec.getFields().get(TECHNICAL_ERROR_FIELD_INDEX).getName())
-				.value(error.getMessage())
+				.value(formatTechnicalErrorMessage(error))
 				.build();
 		EmbedFieldData userInputField = EmbedFieldData.builder()
 				.inline(true)
@@ -58,6 +59,11 @@ public class ErrorMessageBuilder implements MessageBuilder<ErrorMessageContent> 
 		EmbedFieldData supportServerLinkField = embedSpec.getFields().get(SUPPORT_SERVER_FIELD_INDEX).toEmbedFieldData();
 		
 		return List.of(technicalErrorField, userInputField, supportServerLinkField);
+	}
+	
+	private String formatTechnicalErrorMessage(Throwable error) {
+		return Optional.ofNullable(error.getMessage())
+				.orElseGet(() -> error.getClass().getSimpleName());
 	}
 
 }
