@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
-import skaro.pokedex.sdk.messaging.MessageReceiver;
+import skaro.pokedex.sdk.messaging.MessageReceiverHotStream;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequestReport;
 import skaro.pokedex.sdk.worker.command.manager.CommandManager;
@@ -17,10 +17,10 @@ public class CommandMessageReceiverSource implements CommandSource {
 	private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	
 	private CommandManager manager;
-	private MessageReceiver<WorkRequest> receiver;
+	private MessageReceiverHotStream<WorkRequest> receiver;
 	private Scheduler scheduler;
 	
-	public CommandMessageReceiverSource(CommandManager manager, MessageReceiver<WorkRequest> receiver, Scheduler scheduler) {
+	public CommandMessageReceiverSource(CommandManager manager, MessageReceiverHotStream<WorkRequest> receiver, Scheduler scheduler) {
 		this.manager = manager; 
 		this.receiver = receiver;
 		this.scheduler = scheduler;

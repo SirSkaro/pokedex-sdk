@@ -4,9 +4,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.FluxSink.OverflowStrategy;
 import reactor.core.scheduler.Scheduler;
-import skaro.pokedex.sdk.messaging.MessageReceiver;
+import skaro.pokedex.sdk.messaging.MessageReceiverHotStream;
 
-public class WorkRequestReceiver implements MessageReceiver<WorkRequest> {
+public class WorkRequestReceiver implements MessageReceiverHotStream<WorkRequest> {
 
 	private Flux<WorkRequest> publish;
 	private FluxSink<WorkRequest> fluxSink;

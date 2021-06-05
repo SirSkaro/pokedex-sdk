@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 
 import reactor.core.scheduler.Scheduler;
-import skaro.pokedex.sdk.messaging.MessageReceiver;
+import skaro.pokedex.sdk.messaging.MessageReceiverHotStream;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.worker.command.error.ErrorRecoveryAspectConfiguration;
 import skaro.pokedex.sdk.worker.command.manager.CommandManager;
@@ -53,7 +53,7 @@ public class DefaultWorkerCommandConfiguration {
 	}
 	
 	@Bean
-	public CommandSource commandSrouce(CommandManager manager, MessageReceiver<WorkRequest> receiver, Scheduler scheduler) {
+	public CommandSource commandSrouce(CommandManager manager, MessageReceiverHotStream<WorkRequest> receiver, Scheduler scheduler) {
 		return new CommandMessageReceiverSource(manager, receiver, scheduler);
 	}
 	

@@ -1,4 +1,4 @@
-package skaro.pokedex.sdk;
+package skaro.pokedex.sdk.discord;
 
 import javax.validation.constraints.NotEmpty;
 

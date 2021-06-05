@@ -1,5 +1,6 @@
 package skaro.pokedex.sdk.worker;
 
+import static skaro.pokedex.sdk.messaging.dispatch.DispatchTopicMessagingConfiguration.DISPATCH_TOPIC_EXCHANGE_BEAN;
 import static skaro.pokedex.sdk.messaging.dispatch.DispatchTopicMessagingConfiguration.SIMPLE_COMMAND_ROUTING_PATTERN_PREFIX;
 
 import java.util.List;
@@ -17,42 +18,46 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.DirectMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.MessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.GenericApplicationContext;
 
-import skaro.pokedex.sdk.messaging.MessageReceiver;
+import skaro.pokedex.sdk.messaging.MessageReceiverHotStream;
 import skaro.pokedex.sdk.messaging.dispatch.DispatchTopicMessagingConfiguration;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequestReceiver;
-import skaro.pokedex.sdk.worker.command.WorkerCommandConfigurationProperties;
 import skaro.pokedex.sdk.worker.command.registration.CommandRegistrar;
 import skaro.pokedex.sdk.worker.command.registration.CommandRegistration;
 
 @Configuration
 @Import(DispatchTopicMessagingConfiguration.class)
 public class WorkerMessageListenConfiguration {
-
+	public static final String COMMAND_DISPATCH_QUEUE_BEAN = "dispatchQueueBean";
+	public static final String COMMAND_BINDINGS_BEAN = "commandBindings";
+	public static final String COMMAND_LISTENER_CONTAINER_BEAN = "commandListenerContainer";
+	public static final String COMMAND_MESSAGE_LISTENER_ADAPTER_BEAN = "commandMessageListenerAdapter";
+	
 	@Bean
-	public MessageReceiver<WorkRequest> messageReceiver() {
+	public MessageReceiverHotStream<WorkRequest> messageReceiver() {
 		return new WorkRequestReceiver();
 	}
 	
-	@Bean
-	public MessageListenerAdapter listenerAdapter(MessageReceiver<WorkRequest> receiver) {
-		return new MessageListenerAdapter(receiver, MessageReceiver.RECIEVE_METHOD_NAME);
+	@Bean(COMMAND_MESSAGE_LISTENER_ADAPTER_BEAN)
+	public MessageListenerAdapter listenerAdapter(MessageReceiverHotStream<WorkRequest> receiver) {
+		return new MessageListenerAdapter(receiver, MessageReceiverHotStream.RECEIVE_METHOD_NAME);
 	}
 	
-	@Bean
-	public Queue queue(WorkerCommandConfigurationProperties workerProperties) {
+	@Bean(COMMAND_DISPATCH_QUEUE_BEAN)
+	public Queue queue() {
 		return new AnonymousQueue();
 	}
 	
-	@Bean 
+	@Bean(COMMAND_BINDINGS_BEAN)
 	public List<Binding> bindings(GenericApplicationContext context, 
-			Queue queue, 
-			TopicExchange topic,
+			@Qualifier(COMMAND_DISPATCH_QUEUE_BEAN) Queue queue, 
+			@Qualifier(DISPATCH_TOPIC_EXCHANGE_BEAN) TopicExchange topic,
 			CommandRegistrar commandRegistrar) {
 		
 		return commandRegistrar.getCommandRegistrations().stream()
@@ -61,10 +66,10 @@ public class WorkerMessageListenConfiguration {
 				.collect(Collectors.toList());
 	}
 	
-	@Bean
+	@Bean(COMMAND_LISTENER_CONTAINER_BEAN)
 	public MessageListenerContainer messageListenerContainer(ConnectionFactory connectionFactory, 
-			Queue queue, 
-			MessageListenerAdapter adapter,
+			@Qualifier(COMMAND_DISPATCH_QUEUE_BEAN) Queue queue, 
+			@Qualifier(COMMAND_MESSAGE_LISTENER_ADAPTER_BEAN) MessageListenerAdapter adapter,
 			Executor executor) {
 		DirectMessageListenerContainer listenerContainer = new DirectMessageListenerContainer();
 		listenerContainer.setConnectionFactory(connectionFactory);

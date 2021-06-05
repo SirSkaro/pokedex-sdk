@@ -11,7 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.test.StepVerifier;
-import skaro.pokedex.sdk.messaging.MessageReceiver;
+import skaro.pokedex.sdk.messaging.MessageReceiverHotStream;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequestReport;
 import skaro.pokedex.sdk.worker.command.manager.CommandManager;
@@ -22,7 +22,7 @@ public class CommandMessageReceiverSourceTest {
 	@Mock
 	private CommandManager manager;
 	@Mock
-	private MessageReceiver<WorkRequest> receiver;
+	private MessageReceiverHotStream<WorkRequest> receiver;
 	@Mock
 	private Scheduler scheduler;
 	

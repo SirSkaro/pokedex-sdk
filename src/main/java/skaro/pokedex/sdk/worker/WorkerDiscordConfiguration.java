@@ -18,8 +18,8 @@ import discord4j.rest.request.Router;
 import discord4j.rest.request.RouterOptions;
 import reactor.core.scheduler.Scheduler;
 import reactor.netty.http.client.HttpClient;
-import skaro.pokedex.sdk.DiscordConfigurationProperties;
 import skaro.pokedex.sdk.discord.Discord4jRouterFacade;
+import skaro.pokedex.sdk.discord.DiscordConfigurationProperties;
 import skaro.pokedex.sdk.discord.DiscordRouterFacade;
 
 @Configuration

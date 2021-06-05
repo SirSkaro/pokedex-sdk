@@ -2,7 +2,10 @@ package skaro.pokedex.sdk.messaging.cache;
 
 import java.io.Serializable;
 
-public class PrefixInvalidationMessage implements Serializable {
+import skaro.pokedex.sdk.cache.DiscordGuildCacheEvictionMessage;
+import skaro.pokedex.sdk.client.guild.GuildSettings;
+
+public class PrefixInvalidationMessage implements Serializable, DiscordGuildCacheEvictionMessage {
 	private static final long serialVersionUID = 1L;
 	
 	private String guildId;
@@ -10,9 +13,12 @@ public class PrefixInvalidationMessage implements Serializable {
 	public String getGuildId() {
 		return guildId;
 	}
-
 	public void setGuildId(String guildId) {
 		this.guildId = guildId;
+	}
+	@Override
+	public Class<?> getEntityClass() {
+		return GuildSettings.class;
 	}
 
 }
