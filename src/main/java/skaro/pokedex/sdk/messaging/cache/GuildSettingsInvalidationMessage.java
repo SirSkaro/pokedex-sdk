@@ -5,7 +5,7 @@ import java.io.Serializable;
 import skaro.pokedex.sdk.cache.DiscordGuildCacheEvictionMessage;
 import skaro.pokedex.sdk.client.guild.GuildSettings;
 
-public class PrefixInvalidationMessage implements Serializable, DiscordGuildCacheEvictionMessage {
+public class GuildSettingsInvalidationMessage implements Serializable, DiscordGuildCacheEvictionMessage {
 	private static final long serialVersionUID = 1L;
 	
 	private String guildId;
