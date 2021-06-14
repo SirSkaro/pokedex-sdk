@@ -40,7 +40,7 @@ public enum Language {
 	public static Optional<Language> getLanguage(String languageToCheck) {
 		Predicate<Language> matchesLanguageEnum = language -> StringUtils.equalsIgnoreCase(languageToCheck, language.name());
 		Predicate<Language> matchesLanguageName = language -> StringUtils.equalsIgnoreCase(languageToCheck, language.getName());
-		Predicate<Language> matchesLanguageAbbreviation = language -> StringUtils.equalsIgnoreCase(languageToCheck, language.getName());
+		Predicate<Language> matchesLanguageAbbreviation = language -> StringUtils.equalsIgnoreCase(languageToCheck, language.getAbbreviation());
 		
 		return Stream.of(Language.values())
 			.filter(matchesLanguageName
