@@ -1,5 +1,12 @@
 package skaro.pokedex.sdk.client;
 
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Language {
@@ -27,6 +34,19 @@ public enum Language {
 
 	public String getAbbreviation() {
 		return abbreviation;
+	}
+	
+	@JsonIgnore
+	public static Optional<Language> getLanguage(String languageToCheck) {
+		Predicate<Language> matchesLanguageEnum = language -> StringUtils.equalsIgnoreCase(languageToCheck, language.name());
+		Predicate<Language> matchesLanguageName = language -> StringUtils.equalsIgnoreCase(languageToCheck, language.getName());
+		Predicate<Language> matchesLanguageAbbreviation = language -> StringUtils.equalsIgnoreCase(languageToCheck, language.getName());
+		
+		return Stream.of(Language.values())
+			.filter(matchesLanguageName
+					.or(matchesLanguageAbbreviation)
+					.or(matchesLanguageEnum))
+			.findFirst();
 	}
 	
 }
