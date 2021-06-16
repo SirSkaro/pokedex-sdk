@@ -14,6 +14,8 @@ import reactor.core.publisher.Mono;
 import skaro.pokedex.sdk.client.CacheFacade;
 
 public class CachingGuildServiceClient implements GuildServiceClient {
+	public static final String GUILD_SETTINGS_ENDPOINT = "/guild-settings";
+	
 	private WebClient webClient;
 	private Optional<CacheFacade> cacheFacade;
 	
@@ -71,7 +73,7 @@ public class CachingGuildServiceClient implements GuildServiceClient {
 	
 	private Function<UriBuilder, URI> createUri(String settingsId) {
 		return uriBuilder -> uriBuilder
-				.path("/guild-settings")
+				.path(GUILD_SETTINGS_ENDPOINT)
 				.path("/{id}")
 				.build(settingsId);
 	}
