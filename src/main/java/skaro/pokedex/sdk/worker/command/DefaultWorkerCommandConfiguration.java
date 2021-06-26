@@ -16,6 +16,7 @@ import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
 import skaro.pokedex.sdk.worker.command.error.ErrorRecoveryAspectConfiguration;
 import skaro.pokedex.sdk.worker.command.manager.CommandManager;
 import skaro.pokedex.sdk.worker.command.manager.ReportingCommandManager;
+import skaro.pokedex.sdk.worker.command.ratelimit.RateLimitAspectConfiguration;
 import skaro.pokedex.sdk.worker.command.registration.BeanCommandRegistrar;
 import skaro.pokedex.sdk.worker.command.registration.CommandRegistrar;
 import skaro.pokedex.sdk.worker.command.source.CommandSource;
@@ -27,6 +28,7 @@ import skaro.pokedex.sdk.worker.command.validation.ArgumentValidationChainAspect
 @Import({
 	ErrorRecoveryAspectConfiguration.class,
 	ArgumentValidationChainAspectConfiguration.class,
+	RateLimitAspectConfiguration.class,
 	CommonLocaleSpecConfiguration.class
 })
 @PropertySource("classpath:sdk.properties")
@@ -34,6 +36,7 @@ public class DefaultWorkerCommandConfiguration {
 	public static final String COMMAND_BEAN_POSTFIX = "Command";
 	public static final int ERROR_RECOVERY_ASPECT_ORDER = 0;
 	public static final int ARGUMENT_VALIDATION_ASPECT_ORDER = 1;
+	public static final int RATE_LIMIT_ASPECT_ORDER = 2;
 	
 	@Bean
 	@Valid

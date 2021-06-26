@@ -29,7 +29,9 @@ public class ArgumentValidationChainAspectConfiguration {
 		this.beanFactory = beanFactory;
 	}
 
-	@Around("classAnnotatedWithValidationFilterChain(filterChain) && methodHasWorkRequestArgument(workRequest)")
+	@Around("implementsCommand()"
+			+ " && classAnnotatedWithValidationFilterChain(filterChain)"
+			+ " && methodHasWorkRequestArgument(workRequest)")
 	public Object executeFilterChain(ProceedingJoinPoint joinPoint, ValidationFilterChain filterChain, WorkRequest workRequest) {
 		try {
 			return constructChain(filterChain, workRequest)
@@ -38,6 +40,9 @@ public class ArgumentValidationChainAspectConfiguration {
 			return Mono.error(e);
 		}
 	}
+	
+	@Pointcut("target(skaro.pokedex.sdk.worker.command.Command)") 
+	private void implementsCommand() {}
 	
 	@Pointcut("@within(filterChain)")
 	private void classAnnotatedWithValidationFilterChain(ValidationFilterChain filterChain) {}
@@ -63,13 +68,11 @@ public class ArgumentValidationChainAspectConfiguration {
 	
 	@SuppressWarnings("unchecked")
 	private Mono<AnsweredWorkRequest> proceedWithCommand(ProceedingJoinPoint joinPoint) {
-		return Mono.defer( () -> {
-			try {
-				return (Mono<AnsweredWorkRequest>) joinPoint.proceed(joinPoint.getArgs());
-			} catch (Throwable e) {
-				return Mono.error(e);
-			}
-		});
+		try {
+			return (Mono<AnsweredWorkRequest>) joinPoint.proceed(joinPoint.getArgs());
+		} catch (Throwable e) {
+			return Mono.error(e);
+		}
 	}
 	
 }

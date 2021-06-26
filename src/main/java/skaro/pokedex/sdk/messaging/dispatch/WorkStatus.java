@@ -4,6 +4,7 @@ public enum WorkStatus {
 
 	SUCCESS,
 	BAD_REQUEST,
+	RATE_LIMIT,
 	ERROR;
 	
 }

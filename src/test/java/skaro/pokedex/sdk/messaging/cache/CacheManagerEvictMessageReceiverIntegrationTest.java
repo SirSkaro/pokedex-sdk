@@ -15,7 +15,6 @@ import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import skaro.pokedex.sdk.cache.DiscordGuildCacheEvictionMessage;
 import skaro.pokedex.sdk.client.guild.GuildSettings;
 
 @ExtendWith(SpringExtension.class)

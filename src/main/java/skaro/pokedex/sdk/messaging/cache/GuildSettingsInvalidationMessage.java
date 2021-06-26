@@ -2,7 +2,6 @@ package skaro.pokedex.sdk.messaging.cache;
 
 import java.io.Serializable;
 
-import skaro.pokedex.sdk.cache.DiscordGuildCacheEvictionMessage;
 import skaro.pokedex.sdk.client.guild.GuildSettings;
 
 public class GuildSettingsInvalidationMessage implements Serializable, DiscordGuildCacheEvictionMessage {

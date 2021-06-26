@@ -2,7 +2,7 @@ package skaro.pokedex.sdk.cache;
 
 import javax.validation.constraints.Positive;
 
-public class CacheConfigurationProperties {
+public class NearCacheConfigurationProperties {
 
 	@Positive
 	private Integer maxSize;

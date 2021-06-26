@@ -7,8 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
 
-import skaro.pokedex.sdk.cache.DiscordGuildCacheEvictionMessage;
-
 public class CacheManagerEvictMessageReceiver implements CacheEvictMessageReceiver {
 	private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	

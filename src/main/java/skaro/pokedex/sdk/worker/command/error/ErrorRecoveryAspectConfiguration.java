@@ -56,6 +56,7 @@ public class ErrorRecoveryAspectConfiguration {
 		ErrorMessageContent messageContent = new ErrorMessageContent();
 		messageContent.setWorkRequest(workRequest);
 		messageContent.setError(error);
+		error.printStackTrace();
 		
 		return messageDirector.createDiscordMessage(messageContent, workRequest.getChannelId())
 				.thenReturn(createAnswer(workRequest));
