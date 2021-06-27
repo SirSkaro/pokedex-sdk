@@ -3,17 +3,19 @@ package skaro.pokedex.sdk.cache;
 import javax.validation.Valid;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.config.ClientConnectionStrategyConfig;
-import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.spring.cache.HazelcastCacheManager;
 
 @Configuration
 public class DistributedCacheConfiguration {
+	public static final String DISTRIBUTED_CACHE_MANAGER_BEAN = "distributedCacheManager";
 	private static final String DISTRIBUTED_CHACHE_CONFIGURATION_PROPERTIES_PREFIX = "skaro.pokedex.cache.distributed";
 	
 	@Bean
@@ -35,9 +37,15 @@ public class DistributedCacheConfiguration {
 		return clientConfig;
 	}
 	
-//	@Bean
-//	public HazelcastInstance hazelcastInstance(ClientConfig clientConifg) {
-//		return HazelcastClient.newHazelcastClient(clientConifg);
-//	}
+	@Bean
+	public HazelcastInstance hazelcastInstance(ClientConfig clientConifg) {
+		return HazelcastClient.newHazelcastClient(clientConifg);
+	}
+	
+	@Bean(DISTRIBUTED_CACHE_MANAGER_BEAN)
+	public CacheManager cacheManager(HazelcastInstance hazelcastInstance) {
+		HazelcastCacheManager cacheManager = new HazelcastCacheManager(hazelcastInstance);
+		return cacheManager;
+	}
 	
 }

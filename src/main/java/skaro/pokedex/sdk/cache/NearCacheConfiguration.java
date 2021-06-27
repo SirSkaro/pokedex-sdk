@@ -5,7 +5,6 @@ import java.util.concurrent.Executor;
 
 import javax.validation.Valid;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -27,8 +26,7 @@ import skaro.pokedex.sdk.client.MonoCacheFacade;
 public class NearCacheConfiguration {
 	public static final String NEAR_CACHE_MANAGER_BEAN = "nearCacheManager";
 	private static final String NEAR_CACHE_CONFIGURATION_PROPERTIES_PREFIX = "skaro.pokedex.cache.near";
-	private static final String CACHE_MAINTENANCE_SCHEDULER_BEAN = "cacheMaintenanceSchedulerBean";
-	
+	public static final String CACHE_MAINTENANCE_SCHEDULER_BEAN = "cacheMaintenanceSchedulerBean";
 	
 	@Bean
 	@ConfigurationProperties(NEAR_CACHE_CONFIGURATION_PROPERTIES_PREFIX)
@@ -47,7 +45,7 @@ public class NearCacheConfiguration {
 	}
 	
 	@Bean
-	public @NonNull Caffeine<Object, Object> caffeineConfig(Executor executor, Scheduler scheduler, NearCacheConfigurationProperties cacheProperties) {
+	public Caffeine<Object, Object> caffeineConfig(Executor executor, Scheduler scheduler, NearCacheConfigurationProperties cacheProperties) {
 		return Caffeine.newBuilder()
 	    		.executor(executor)
 	    		.scheduler(scheduler)

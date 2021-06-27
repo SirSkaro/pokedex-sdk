@@ -3,8 +3,6 @@ package skaro.pokedex.sdk.worker.command.ratelimit;
 import static skaro.pokedex.sdk.worker.command.DefaultWorkerCommandConfiguration.RATE_LIMIT_ASPECT_ORDER;
 
 import java.lang.invoke.MethodHandles;
-import java.time.Duration;
-import java.util.function.Supplier;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -15,17 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
-import com.hazelcast.core.HazelcastInstance;
-
 import io.github.bucket4j.AsyncBucket;
-import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Bucket4j;
-import io.github.bucket4j.BucketConfiguration;
 import io.github.bucket4j.ConsumptionProbe;
-import io.github.bucket4j.Refill;
-import io.github.bucket4j.grid.ProxyManager;
-import io.github.bucket4j.grid.hazelcast.Hazelcast;
 import reactor.core.publisher.Mono;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
 import skaro.pokedex.sdk.messaging.dispatch.WorkRequest;
@@ -37,11 +26,10 @@ import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
 public class RateLimitAspectConfiguration {
 	private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	
-	private ProxyManager<String> buckets;
+	private BucketPool bucketPool;
 
-	public RateLimitAspectConfiguration(HazelcastInstance hazelcastInstance) {
-		this.buckets = Bucket4j.extension(Hazelcast.class)
-				.proxyManagerForMap(hazelcastInstance.getMap("per-client-bucket-map"));
+	public RateLimitAspectConfiguration(BucketPool bucketPool) {
+		this.bucketPool = bucketPool;
 	}
 
 	@Around("implementsCommand()"
@@ -60,9 +48,7 @@ public class RateLimitAspectConfiguration {
 	private void methodHasWorkRequestArgument(WorkRequest workRequest) {}
 
 	private Mono<AsyncBucket> getBucketForCommand(RateLimit rateLimit, WorkRequest workRequest) {
-		String bucketKey = getBucketKey(rateLimit, workRequest);
-		return Mono.fromCallable(() -> buckets.getProxy(bucketKey, fallbackOnBucketIfNotPresent(rateLimit)))
-				.map(Bucket::asAsync);
+		return bucketPool.getBucket(workRequest.getGuildId(), rateLimit);
 	}
 	
 	private Mono<AnsweredWorkRequest> proceedIfNotRateLimited(ProceedingJoinPoint joinPoint, RateLimit rateLimit, WorkRequest workRequest) {
@@ -75,20 +61,6 @@ public class RateLimitAspectConfiguration {
 	
 	private Mono<ConsumptionProbe> probeRateLimit(AsyncBucket bucket) {
 		return Mono.fromFuture(bucket.tryConsumeAndReturnRemaining(1));
-	}
-
-	private Supplier<BucketConfiguration> fallbackOnBucketIfNotPresent(RateLimit rateLimit) {
-		Refill refill = Refill.intervally(RATE_LIMIT_ASPECT_ORDER, Duration.ofSeconds(rateLimit.seconds()));
-		Bandwidth bandwidth = Bandwidth.classic(rateLimit.requests(), refill);
-		return () -> Bucket4j.configurationBuilder()
-				.addLimit(bandwidth)
-				.build();
-	}
-
-	private String getBucketKey(RateLimit rateLimit, WorkRequest workRequest) {
-		String commandClassName =  rateLimit.command().getName();
-		String guildId = workRequest.getGuildId();
-		return String.format("%s-%s", commandClassName, guildId);
 	}
 	
 	@SuppressWarnings("unchecked")
