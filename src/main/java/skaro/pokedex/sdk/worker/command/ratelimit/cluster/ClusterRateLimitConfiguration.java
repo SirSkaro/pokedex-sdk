@@ -13,17 +13,17 @@ import io.github.bucket4j.Bucket4j;
 import io.github.bucket4j.grid.ProxyManager;
 import io.github.bucket4j.grid.hazelcast.Hazelcast;
 import skaro.pokedex.sdk.cache.DistributedCacheConfiguration;
+import skaro.pokedex.sdk.worker.command.ratelimit.BaseRateLimitConfiguration;
 import skaro.pokedex.sdk.worker.command.ratelimit.BucketPool;
 import skaro.pokedex.sdk.worker.command.ratelimit.RateLimit;
-import skaro.pokedex.sdk.worker.command.ratelimit.RateLimitAspectConfiguration;
 
 @Configuration
 @Import({
 	DistributedCacheConfiguration.class,
-	RateLimitAspectConfiguration.class
+	BaseRateLimitConfiguration.class
 })
-public class RateLimitClusterConfiguration {
-	private static final String RATE_LIMIT_MAP_NAME = "per-client-bucket-map";
+public class ClusterRateLimitConfiguration {
+	private static final String RATE_LIMIT_MAP_NAME = "per-guild-bucket-map";
 	
 	@Bean
 	public MapConfig mapConfig(ApplicationContext context) {

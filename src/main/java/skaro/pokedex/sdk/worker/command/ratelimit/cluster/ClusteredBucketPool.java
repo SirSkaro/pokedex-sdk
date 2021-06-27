@@ -24,11 +24,11 @@ public class ClusteredBucketPool implements BucketPool {
 	@Override
 	public Mono<AsyncBucket> getBucket(String guildId, RateLimit rateLimit) {
 		String bucketKey = createBucketKey(guildId, rateLimit);
-		return Mono.fromCallable(() -> buckets.getProxy(bucketKey, fallbackOnBucketIfNotPresent(rateLimit)))
+		return Mono.fromCallable(() -> buckets.getProxy(bucketKey, supplyFallbackBucket(rateLimit)))
 				.map(Bucket::asAsync);
 	}
 
-	private Supplier<BucketConfiguration> fallbackOnBucketIfNotPresent(RateLimit rateLimit) {
+	private Supplier<BucketConfiguration> supplyFallbackBucket(RateLimit rateLimit) {
 		Refill refill = Refill.intervally(rateLimit.requests(), Duration.ofSeconds(rateLimit.seconds()));
 		Bandwidth bandwidth = Bandwidth.classic(rateLimit.requests(), refill);
 		return () -> Bucket4j.configurationBuilder()

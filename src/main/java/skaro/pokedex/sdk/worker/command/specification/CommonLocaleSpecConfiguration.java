@@ -11,6 +11,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import skaro.pokedex.sdk.client.Language;
+import skaro.pokedex.sdk.discord.DiscordMessageDirector;
+import skaro.pokedex.sdk.discord.DiscordRouterFacade;
+import skaro.pokedex.sdk.discord.MessageCreateRequestDirector;
+import skaro.pokedex.sdk.worker.command.validation.common.DiscordPermissionsMessageBuilder;
+import skaro.pokedex.sdk.worker.command.validation.common.DiscordPermissionsMessageContent;
 
 @Configuration
 public class CommonLocaleSpecConfiguration {
@@ -23,7 +28,8 @@ public class CommonLocaleSpecConfiguration {
 	public static final String DISOCRD_PERMISSION_LOCALE_SPEC_BEAN = "discordPermissionLocaleSpecBean";
 	private static final String BASE_DISCORD_PERMISSION_LOCALE_SPEC_BEAN = "baseDiscordPermissionLocaleSpecBean";
 	private static final String DISOCRD_PERMISSION_LOCALE_SPEC_PROPERTIES_PREFIX = "skaro.pokedex.sdk.discord.embed-locale.filter.discord-permissions";
-
+	public static final String DISCORD_PERMISSION_MESSAGE_DIRECTOR_BEAN = "discordPermissionMessageDIrectorBean";
+	
 	public static final String BASE_EXPECTED_ARGUMENTS_FILTER_LOCALE_SPEC_BEAN = "baseExpectedArgumentsFilterLocaleSpecBean";
 	public static final String EXPECTED_ARGUMENTS_FILTER_LOCALE_SPEC_BEAN = "expectedArgumentsFilterLocaleSpecBean";
 	private static final String BASE_EXPECTED_ARGUMENTS_FILTER_LOCALE_SPEC_PROPERTIES_PREFIX = "skaro.pokedex.sdk.discord.embed-locale.filter.expected-arguments";
@@ -66,6 +72,14 @@ public class CommonLocaleSpecConfiguration {
 				result.getEmbedSpecs().put(language, spec);
 			});
 		return result;
+	}
+	
+	@Bean(DISCORD_PERMISSION_MESSAGE_DIRECTOR_BEAN)
+	public DiscordMessageDirector<DiscordPermissionsMessageContent> discordPermissionMessageDirector(
+			DiscordRouterFacade router, 
+			@Qualifier(DISOCRD_PERMISSION_LOCALE_SPEC_BEAN) DiscordEmbedLocaleSpec localeSpec) {
+		DiscordPermissionsMessageBuilder messageBuilder = new DiscordPermissionsMessageBuilder(localeSpec);
+		return new MessageCreateRequestDirector<DiscordPermissionsMessageContent>(router, messageBuilder);
 	}
 	
 	@Bean(BASE_EXPECTED_ARGUMENTS_FILTER_LOCALE_SPEC_BEAN)

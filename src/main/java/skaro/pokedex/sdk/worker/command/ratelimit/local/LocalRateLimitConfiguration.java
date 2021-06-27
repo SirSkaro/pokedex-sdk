@@ -1,7 +1,5 @@
 package skaro.pokedex.sdk.worker.command.ratelimit.local;
 
-import static skaro.pokedex.sdk.cache.NearCacheConfiguration.CACHE_MAINTENANCE_SCHEDULER_BEAN;
-
 import java.time.Duration;
 import java.util.concurrent.Executor;
 
@@ -17,22 +15,29 @@ import org.springframework.core.annotation.AnnotationUtils;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Scheduler;
 
-import skaro.pokedex.sdk.cache.NearCacheConfiguration;
+import reactor.core.publisher.Mono;
+import skaro.pokedex.sdk.worker.command.ratelimit.BaseRateLimitConfiguration;
 import skaro.pokedex.sdk.worker.command.ratelimit.BucketPool;
 import skaro.pokedex.sdk.worker.command.ratelimit.RateLimit;
-import skaro.pokedex.sdk.worker.command.ratelimit.RateLimitAspectConfiguration;
 
 @Configuration
-@Import({
-	RateLimitAspectConfiguration.class,
-	NearCacheConfiguration.class
-})
-public class RateLimitConfiguration {
-	private final static String RATE_LIMIT_CACHE_BEAN = "rateLimitCache";
+@Import(BaseRateLimitConfiguration.class)
+public class LocalRateLimitConfiguration {
+	private static final String RATE_LIMIT_CACHE_BEAN = "rateLimitCache";
+	private static final String RATE_LIMIT_CACHE_MAINTENANCE_SCHEDULER_BEAN = "rateLimitacheMaintenanceSchedulerBean";
+	
+	@Bean(RATE_LIMIT_CACHE_MAINTENANCE_SCHEDULER_BEAN)
+	public Scheduler scheduler(reactor.core.scheduler.Scheduler scheduler) {
+		return (executor, runnable, delay, unit) -> {
+			return Mono.delay(Duration.of(delay, unit.toChronoUnit()), scheduler)
+				.flatMap(waitTime -> Mono.fromRunnable(runnable))
+				.toFuture();
+		};
+	}
 	
 	@Bean(RATE_LIMIT_CACHE_BEAN)
 	public Cache rateLimitCache(ApplicationContext context, 
-			@Qualifier(CACHE_MAINTENANCE_SCHEDULER_BEAN) Scheduler scheduler, 
+			@Qualifier(RATE_LIMIT_CACHE_MAINTENANCE_SCHEDULER_BEAN) Scheduler scheduler, 
 			Executor executor) {
 		int maxTimeToLive = getLargestRateLimitDuration(context);
 		
