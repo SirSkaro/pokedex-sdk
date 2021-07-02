@@ -45,7 +45,7 @@ public class BaseRateLimitConfiguration {
 	
 	@Bean(WARNING_MESSSAGE_BANDWIDTH_BEAN)
 	public Bandwidth warningMessageBandwidth() {
-		Refill refill = Refill.intervally(1, Duration.ofSeconds(5));
+		Refill refill = Refill.intervally(1, Duration.ofSeconds(15));
 		return Bandwidth.classic(1, refill);
 	}
 	

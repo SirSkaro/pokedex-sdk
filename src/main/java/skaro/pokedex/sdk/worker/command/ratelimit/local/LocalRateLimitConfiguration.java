@@ -50,7 +50,7 @@ public class LocalRateLimitConfiguration {
 	@Bean(WARNING_MESSAGE_CACHE_BEAN)
 	public Cache warningMessageCache(Scheduler scheduler, Executor executor) {
 		com.github.benmanes.caffeine.cache.Cache<Object, Object> cache = Caffeine.newBuilder()
-				.expireAfterAccess(Duration.ofSeconds(15))
+				.expireAfterAccess(Duration.ofSeconds(30))
 				.executor(executor)
 				.scheduler(scheduler)
 				.build();
