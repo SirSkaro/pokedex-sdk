@@ -2,8 +2,6 @@ package skaro.pokedex.sdk.worker.command.ratelimit;
 
 import static skaro.pokedex.sdk.worker.command.DefaultWorkerCommandConfiguration.RATE_LIMIT_ASPECT_ORDER;
 
-import java.util.concurrent.TimeUnit;
-
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -11,8 +9,6 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
-import io.github.bucket4j.AsyncBucket;
-import io.github.bucket4j.ConsumptionProbe;
 import reactor.core.publisher.Mono;
 import skaro.pokedex.sdk.discord.DiscordMessageDirector;
 import skaro.pokedex.sdk.messaging.dispatch.AnsweredWorkRequest;
@@ -23,11 +19,11 @@ import skaro.pokedex.sdk.messaging.dispatch.WorkStatus;
 @Configuration
 @Order(RATE_LIMIT_ASPECT_ORDER)
 public class RateLimitAspectConfiguration {
-	private BucketPool bucketPool;
+	private RateLimitFacade rateLimitFacade;
 	private DiscordMessageDirector<RateLimitMessageContent> messageDirector;
 
-	public RateLimitAspectConfiguration(BucketPool bucketPool, DiscordMessageDirector<RateLimitMessageContent> messageDirector) {
-		this.bucketPool = bucketPool;
+	public RateLimitAspectConfiguration(RateLimitFacade rateLimitFacade, DiscordMessageDirector<RateLimitMessageContent> messageDirector) {
+		this.rateLimitFacade = rateLimitFacade;
 		this.messageDirector = messageDirector;
 	}
 
@@ -35,9 +31,10 @@ public class RateLimitAspectConfiguration {
 			+ " && classAnnotatedWithRateLimit(rateLimit)"
 			+ " && methodHasWorkRequestArgument(workRequest)")
 	public Object limit(ProceedingJoinPoint joinPoint, RateLimit rateLimit, WorkRequest workRequest) {
-		return getBucketForCommand(rateLimit, workRequest)
-				.flatMap(this::probeRateLimit)
-				.flatMap(probe -> proceedIfNotRateLimited(joinPoint, rateLimit, workRequest, probe));
+		return rateLimitFacade.isCommandOnCooldownForGuild(workRequest.getGuildId(), rateLimit)
+			.flatMap(cooldownReport -> cooldownReport.isOnCooldown() 
+					? createRateLimitMessage(rateLimit, workRequest, cooldownReport)
+					: proceedWithCommand(joinPoint));
 	}
 
 	@Pointcut("target(skaro.pokedex.sdk.worker.command.Command)") 
@@ -47,23 +44,15 @@ public class RateLimitAspectConfiguration {
 	@Pointcut("args(workRequest,..)")
 	private void methodHasWorkRequestArgument(WorkRequest workRequest) {}
 
-	private Mono<AsyncBucket> getBucketForCommand(RateLimit rateLimit, WorkRequest workRequest) {
-		return bucketPool.getBucket(workRequest.getGuildId(), rateLimit);
-	}
-	
-	private Mono<ConsumptionProbe> probeRateLimit(AsyncBucket bucket) {
-		return Mono.fromFuture(bucket.tryConsumeAndReturnRemaining(1));
-	}
-	
-	private Mono<AnsweredWorkRequest> proceedIfNotRateLimited(ProceedingJoinPoint joinPoint, RateLimit rateLimit, WorkRequest workRequest, ConsumptionProbe probe) {
-		if(probe.isConsumed()) {
-			return Mono.defer(() -> proceed(joinPoint));
-		}
-		return Mono.defer(() -> createRateLimitMessage(rateLimit, workRequest, probe));
+	private Mono<AnsweredWorkRequest> createRateLimitMessage(RateLimit rateLimit, WorkRequest workRequest, CooldownReport report) {
+		return Mono.just(createMessageContent(rateLimit, workRequest, report))
+			.filterWhen(messageContent -> shouldSendCooldownMessage(rateLimit, workRequest))
+			.flatMap(messageContent -> messageDirector.createDiscordMessage(messageContent, workRequest.getChannelId()))
+			.thenReturn(createAnswer(workRequest));
 	}
 	
 	@SuppressWarnings("unchecked")
-	private Mono<AnsweredWorkRequest> proceed(ProceedingJoinPoint joinPoint) {
+	private Mono<AnsweredWorkRequest> proceedWithCommand(ProceedingJoinPoint joinPoint) {
 		try {
 			return ((Mono<AnsweredWorkRequest>)joinPoint.proceed(joinPoint.getArgs()));
 		} catch(Throwable e) {
@@ -71,21 +60,17 @@ public class RateLimitAspectConfiguration {
 		}
 	} 
 	
-	private Mono<AnsweredWorkRequest> createRateLimitMessage(RateLimit rateLimit, WorkRequest workRequest, ConsumptionProbe probe) {
-		RateLimitMessageContent messageContent = createMessageContent(rateLimit, workRequest, probe);
-		
-		return messageDirector.createDiscordMessage(messageContent, workRequest.getChannelId())
-				.thenReturn(createAnswer(workRequest));
+	private Mono<Boolean> shouldSendCooldownMessage(RateLimit rateLimit, WorkRequest workRequest) {
+		return rateLimitFacade.isWarningMessageOnCooldownForGuild(workRequest.getGuildId(), rateLimit.command())
+				.map(report -> !report.isOnCooldown());
 	}
 	
-	private RateLimitMessageContent createMessageContent(RateLimit rateLimit, WorkRequest workRequest, ConsumptionProbe probe) {
-		long timeLeftInSeconds = TimeUnit.SECONDS.convert(probe.getNanosToWaitForRefill(), TimeUnit.NANOSECONDS);
-		
+	private RateLimitMessageContent createMessageContent(RateLimit rateLimit, WorkRequest workRequest, CooldownReport report) {
 		RateLimitMessageContent messageContent = new RateLimitMessageContent();
 		messageContent.setRateLimit(rateLimit);
 		messageContent.setLanguage(workRequest.getLanguage());
 		messageContent.setCommand(workRequest.getCommmand());
-		messageContent.setTimeLeftInSeconds(timeLeftInSeconds);
+		messageContent.setTimeLeftInSeconds(report.getSecondsLeftInCooldown());
 		
 		return messageContent;
 	}

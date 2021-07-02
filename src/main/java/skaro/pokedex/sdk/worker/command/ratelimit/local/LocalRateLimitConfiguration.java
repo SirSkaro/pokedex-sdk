@@ -1,5 +1,8 @@
 package skaro.pokedex.sdk.worker.command.ratelimit.local;
 
+import static skaro.pokedex.sdk.worker.command.ratelimit.BaseRateLimitConfiguration.COMMAND_BUCKET_POOL_BEAN;
+import static skaro.pokedex.sdk.worker.command.ratelimit.BaseRateLimitConfiguration.WARNING_MESSAGE_BUCKET_POOL_BEAN;
+
 import java.time.Duration;
 import java.util.concurrent.Executor;
 
@@ -15,29 +18,23 @@ import org.springframework.core.annotation.AnnotationUtils;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Scheduler;
 
-import reactor.core.publisher.Mono;
+import skaro.pokedex.sdk.cache.NearCacheResourceConfiguration;
 import skaro.pokedex.sdk.worker.command.ratelimit.BaseRateLimitConfiguration;
 import skaro.pokedex.sdk.worker.command.ratelimit.BucketPool;
 import skaro.pokedex.sdk.worker.command.ratelimit.RateLimit;
 
 @Configuration
-@Import(BaseRateLimitConfiguration.class)
+@Import({
+	BaseRateLimitConfiguration.class,
+	NearCacheResourceConfiguration.class
+})
 public class LocalRateLimitConfiguration {
 	private static final String RATE_LIMIT_CACHE_BEAN = "rateLimitCache";
-	private static final String RATE_LIMIT_CACHE_MAINTENANCE_SCHEDULER_BEAN = "rateLimitacheMaintenanceSchedulerBean";
-	
-	@Bean(RATE_LIMIT_CACHE_MAINTENANCE_SCHEDULER_BEAN)
-	public Scheduler scheduler(reactor.core.scheduler.Scheduler scheduler) {
-		return (executor, runnable, delay, unit) -> {
-			return Mono.delay(Duration.of(delay, unit.toChronoUnit()), scheduler)
-				.flatMap(waitTime -> Mono.fromRunnable(runnable))
-				.toFuture();
-		};
-	}
+	private static final String WARNING_MESSAGE_CACHE_BEAN = "warningMessageCache";
 	
 	@Bean(RATE_LIMIT_CACHE_BEAN)
-	public Cache rateLimitCache(ApplicationContext context, 
-			@Qualifier(RATE_LIMIT_CACHE_MAINTENANCE_SCHEDULER_BEAN) Scheduler scheduler, 
+	public Cache commandRateLimitCache(ApplicationContext context, 
+			Scheduler scheduler, 
 			Executor executor) {
 		int maxTimeToLive = getLargestRateLimitDuration(context);
 		
@@ -50,8 +47,24 @@ public class LocalRateLimitConfiguration {
 		return new CaffeineCache("rateLimit", cache);
 	}
 	
-	@Bean
-	public BucketPool bucketPool(@Qualifier(RATE_LIMIT_CACHE_BEAN) Cache cache) {
+	@Bean(WARNING_MESSAGE_CACHE_BEAN)
+	public Cache warningMessageCache(Scheduler scheduler, Executor executor) {
+		com.github.benmanes.caffeine.cache.Cache<Object, Object> cache = Caffeine.newBuilder()
+				.expireAfterAccess(Duration.ofSeconds(15))
+				.executor(executor)
+				.scheduler(scheduler)
+				.build();
+		
+		return new CaffeineCache("warningMessage", cache);
+	}
+	
+	@Bean(COMMAND_BUCKET_POOL_BEAN)
+	public BucketPool commandBucketPool(@Qualifier(RATE_LIMIT_CACHE_BEAN) Cache cache) {
+		return new LocalBucketPool(cache);
+	}
+	
+	@Bean(WARNING_MESSAGE_BUCKET_POOL_BEAN)
+	public BucketPool warningMessageBucketPool(@Qualifier(WARNING_MESSAGE_CACHE_BEAN) Cache cache) {
 		return new LocalBucketPool(cache);
 	}
 	

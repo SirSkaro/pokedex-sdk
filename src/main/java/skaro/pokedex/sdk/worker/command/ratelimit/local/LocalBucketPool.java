@@ -1,19 +1,14 @@
 package skaro.pokedex.sdk.worker.command.ratelimit.local;
 
-import java.time.Duration;
-
 import org.springframework.cache.Cache;
 
 import io.github.bucket4j.AsyncBucket;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket4j;
-import io.github.bucket4j.Refill;
 import reactor.core.publisher.Mono;
 import skaro.pokedex.sdk.worker.command.ratelimit.BucketPool;
-import skaro.pokedex.sdk.worker.command.ratelimit.RateLimit;
 
 public class LocalBucketPool implements BucketPool {
-
 	private Cache bucketCache;
 	
 	public LocalBucketPool(Cache bucketCache) {
@@ -21,16 +16,14 @@ public class LocalBucketPool implements BucketPool {
 	}
 
 	@Override
-	public Mono<AsyncBucket> getBucket(String guildId, RateLimit rateLimit) {
-		String bucketKey = createBucketKey(guildId, rateLimit);
-		return Mono.justOrEmpty(bucketCache.get(bucketKey, AsyncBucket.class))
-				.switchIfEmpty(Mono.fromCallable(() -> cacheNewBucket(bucketKey, rateLimit)));
+	public Mono<AsyncBucket> getBucket(String key, Bandwidth bandwidth) {
+		return Mono.justOrEmpty(bucketCache.get(key, AsyncBucket.class))
+				.switchIfEmpty(Mono.fromCallable(() -> cacheNewBucket(key, bandwidth)));
 	}
 	
-	private AsyncBucket cacheNewBucket(String bucketKey, RateLimit rateLimit) {
-		Refill refill = Refill.intervally(rateLimit.requests(), Duration.ofSeconds(rateLimit.seconds()));
+	private AsyncBucket cacheNewBucket(String bucketKey, Bandwidth bandwidth) {
 		AsyncBucket result = Bucket4j.builder()
-			.addLimit(Bandwidth.classic(rateLimit.requests(), refill))
+			.addLimit(bandwidth)
 			.build()
 			.asAsync();
 		
@@ -38,9 +31,4 @@ public class LocalBucketPool implements BucketPool {
 		return result;
 	}
 
-	private String createBucketKey(String guildId, RateLimit rateLimit) {
-		String commandClassName =  rateLimit.command().getName();
-		return String.format("%s-%s", commandClassName, guildId);
-	}
-	
 }

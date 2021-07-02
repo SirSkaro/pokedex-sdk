@@ -1,5 +1,9 @@
 package skaro.pokedex.sdk.worker.command.ratelimit.cluster;
 
+import static skaro.pokedex.sdk.worker.command.ratelimit.BaseRateLimitConfiguration.COMMAND_BUCKET_POOL_BEAN;
+import static skaro.pokedex.sdk.worker.command.ratelimit.BaseRateLimitConfiguration.WARNING_MESSAGE_BUCKET_POOL_BEAN;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,10 +27,15 @@ import skaro.pokedex.sdk.worker.command.ratelimit.RateLimit;
 	BaseRateLimitConfiguration.class
 })
 public class ClusterRateLimitConfiguration {
-	private static final String RATE_LIMIT_MAP_NAME = "per-guild-bucket-map";
+	private static final String COMMAND_RATE_LIMIT_MAP_CONFIG_BEAN = "commandRateLimitMapConfig";
+	private static final String WARNING_MESSAGE_MAP_CONFIG_BEAN = "warningMessageMapConfig";
+	private static final String COMMAND_RATE_LIMIT_MAP = "per-command-per-guild-bucket-map";
+	private static final String WARNING_MESSAGE_RATE_LIMIT_MAP = "per-guild-warning-message-bucket-map";
+	private static final String COMMAND_RATE_LIMIT_PROXY_MANAGER_BEAN = "commandRateLimitProxyManager";
+	private static final String WARNING_MESSAGE_PROXY_MANAGER_BEAN = "warningMessageProxyManager";
 	
-	@Bean
-	public MapConfig mapConfig(ApplicationContext context) {
+	@Bean(COMMAND_RATE_LIMIT_MAP_CONFIG_BEAN)
+	public MapConfig commandRateLimitMapConfig(ApplicationContext context) {
 		int maxTimeToLive = context.getBeansWithAnnotation(RateLimit.class).entrySet().stream()
 				.map(beanEntry -> beanEntry.getValue())
 				.map(bean -> AnnotationUtils.findAnnotation(bean.getClass(), RateLimit.class))
@@ -34,21 +43,45 @@ public class ClusterRateLimitConfiguration {
 				.max(Integer::compare)
 				.orElse(60);
 		
-		MapConfig config = new MapConfig(RATE_LIMIT_MAP_NAME);
+		MapConfig config = new MapConfig(COMMAND_RATE_LIMIT_MAP);
 		config.setTimeToLiveSeconds(maxTimeToLive);
 	
 		return config;
 	}
 	
-	@Bean
-	public ProxyManager<String> proxyManager(HazelcastInstance hazelcastInstance, MapConfig mapConfig) {
-		hazelcastInstance.getConfig().addMapConfig(mapConfig);
-		return Bucket4j.extension(Hazelcast.class)
-				.proxyManagerForMap(hazelcastInstance.getMap(RATE_LIMIT_MAP_NAME));
+	@Bean(WARNING_MESSAGE_MAP_CONFIG_BEAN)
+	public MapConfig warningMessageMapConfig() {
+		MapConfig config = new MapConfig(WARNING_MESSAGE_RATE_LIMIT_MAP);
+		config.setTimeToLiveSeconds(10);
+		
+		return config;
 	}
 	
-	@Bean
-	public BucketPool bucketPool(ProxyManager<String> proxyManger) {
+	@Bean(COMMAND_RATE_LIMIT_PROXY_MANAGER_BEAN)
+	public ProxyManager<String> commandRateLimitProxyManager(
+			HazelcastInstance hazelcastInstance, 
+			@Qualifier(COMMAND_RATE_LIMIT_MAP_CONFIG_BEAN) MapConfig mapConfig) {
+		hazelcastInstance.getConfig().addMapConfig(mapConfig);
+		return Bucket4j.extension(Hazelcast.class)
+				.proxyManagerForMap(hazelcastInstance.getMap(COMMAND_RATE_LIMIT_MAP));
+	}
+	
+	@Bean(WARNING_MESSAGE_PROXY_MANAGER_BEAN)
+	public ProxyManager<String> warningMessageProxyManager(
+			HazelcastInstance hazelcastInstance, 
+			@Qualifier(WARNING_MESSAGE_MAP_CONFIG_BEAN) MapConfig mapConfig) {
+		hazelcastInstance.getConfig().addMapConfig(mapConfig);
+		return Bucket4j.extension(Hazelcast.class)
+				.proxyManagerForMap(hazelcastInstance.getMap(WARNING_MESSAGE_RATE_LIMIT_MAP));
+	}
+	
+	@Bean(COMMAND_BUCKET_POOL_BEAN)
+	public BucketPool commandBucketPool(@Qualifier(COMMAND_RATE_LIMIT_PROXY_MANAGER_BEAN) ProxyManager<String> proxyManger) {
+		return new ClusteredBucketPool(proxyManger);
+	}
+	
+	@Bean(WARNING_MESSAGE_BUCKET_POOL_BEAN)
+	public BucketPool warningMessageBucketPool(@Qualifier(WARNING_MESSAGE_PROXY_MANAGER_BEAN) ProxyManager<String> proxyManger) {
 		return new ClusteredBucketPool(proxyManger);
 	}
 
